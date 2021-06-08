@@ -88,7 +88,7 @@ function telaVisualizarTurma({navigation}){
 	
 	return(
 		<View style={styles.container}>
-			<DataTable style={{ width: '95%' }}>
+			<DataTable style={{ width: '95%', marginBottom: 50 }}>
 				<DataTable.Row>
 					<DataTable.Title>Nome do aluno</DataTable.Title>
 					<DataTable.Title>Comportamento</DataTable.Title>
@@ -145,11 +145,11 @@ function telaVisualizarTurma({navigation}){
 				})}
 			</DataTable>
 
-			<TouchableOpacity style={styles.butaoHome} onPress={press}>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
 				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
 			</TouchableOpacity>
 			
-			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("MainGerencTurmas")}>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainGerencTurmas")}>
 				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
 		</View>
@@ -213,6 +213,14 @@ const styles = StyleSheet.create({
 		marginBottom: 50,
 		width: "80%",
 	},	
+	
+	butaoHomePuro: {
+		backgroundColor: '#766ec5',
+		padding: 5,
+		borderRadius: 5,
+		marginBottom: 50,
+		width: "80%",
+	},
 	
 	txtDropdown:{
 		fontSize: 14,

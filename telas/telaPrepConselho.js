@@ -33,7 +33,7 @@ function telaImportarNotas({navigation}){
 	return(
 		<View style={styles.container}>
 			<Text>placeholder 1</Text>
-			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("MainPrepConselho")}>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainPrepConselho")}>
 				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
 		</View>
@@ -80,7 +80,7 @@ function telaAutoAval({navigation}){
 						lastAval += 1;
 						
 						return(
-							<Card style={{width: width}}>
+							<Card style={{width: width, marginBottom: 15, marginTop: 15}}>
 								<Card.Content>
 								  <Title>Auto-Avaliação {a.data}</Title>
 								  <Paragraph>{a.txt}</Paragraph>
@@ -88,10 +88,10 @@ function telaAutoAval({navigation}){
 							</Card>
 						)
 					})}
-					<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("EscreverAutoAval", {lastAval})}>
+					<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("EscreverAutoAval", {lastAval})}>
 						<Text style={styles.txtbotaohomePuro}>Escrever Auto-Avaliação</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("MainPrepConselho")}>
+					<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainPrepConselho")}>
 						<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 					</TouchableOpacity>
 				</View>
@@ -141,10 +141,10 @@ function telaEscreverAutoAval({ route }){
 				onChangeText={(text) => setTxt(text)}
 				value={txt}
 			/>
-			<TouchableOpacity style={styles.butaoHome} onPress={press}>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
 				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
 			</TouchableOpacity>
-			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("AutoAval")}>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("AutoAval")}>
 				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
 		</View>
@@ -203,13 +203,22 @@ const styles = StyleSheet.create({
 	txtbotaohomePuro: {
 		fontSize: 20,
 		color: '#f4f9fc',
-		textAlign: 'center',
+		textAlignVertical: "center",
+		textAlign: "center",
 	},
   
 	butaoHome: {
 		backgroundColor: '#766ec5',
 		flexDirection: 'row',
 		alignItems: 'center',
+		padding: 5,
+		borderRadius: 5,
+		marginBottom: 50,
+		width: "80%",
+	},	
+	
+	butaoHomePuro: {
+		backgroundColor: '#766ec5',
 		padding: 5,
 		borderRadius: 5,
 		marginBottom: 50,

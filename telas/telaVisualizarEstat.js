@@ -34,7 +34,7 @@ function telaEstudantesPrio({navigation}){
 	return(
 		<View style={styles.container}>
 			<Text>placeholder 1</Text>
-			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("MainVisualizarEstat")}>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainVisualizarEstat")}>
 				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
 		</View>
@@ -45,7 +45,7 @@ function telaEstatIndividuais({navigation}){
 	return(
 		<View style={styles.container}>
 			<Text>placeholder 2</Text>
-			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("MainVisualizarEstat")}>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainVisualizarEstat")}>
 				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
 		</View>
@@ -56,7 +56,7 @@ function telaEstatComparadas({navigation}){
 	return(
 		<View style={styles.container}>
 			<Text>placeholder 3</Text>
-			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("MainVisualizarEstat")}>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainVisualizarEstat")}>
 				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
 		</View>
@@ -120,6 +120,14 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 		marginBottom: 50,
 		width: "80%",
-	},	
+	},
+	
+	butaoHomePuro: {
+		backgroundColor: '#766ec5',
+		padding: 5,
+		borderRadius: 5,
+		marginBottom: 50,
+		width: "80%",
+	},
  
 });

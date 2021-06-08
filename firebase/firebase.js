@@ -1,7 +1,7 @@
 import { firebase } from '@firebase/app'
 import "firebase/firestore";
 
-var firebaseConfig = {
+export var firebaseConfig = {
 	apiKey: "AIzaSyCnYTJyxMPVkubKIi9dy6Q1ilqwq4XHoU8",
     authDomain: "classembly-b1967.firebaseapp.com",
     databaseURL: "https://classembly-b1967-default-rtdb.firebaseio.com",
