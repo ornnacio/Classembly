@@ -2,16 +2,17 @@ import firebase from 'firebase';
 import 'firebase/firestore';
 import { Alert } from 'react-native';
 
-export async function cadastro(email, senha) {
+export async function cadastro(email, senha, nome) {
 	try {
 		await firebase.auth().createUserWithEmailAndPassword(email, senha);
 		const currentUser = firebase.auth().currentUser;
 
-		const db = firebase.firestore(); //salva o email no firestore e exibe no perfil
+		const db = firebase.firestore(); 
 		db.collection("users")
 		.doc(currentUser.uid)
 		.set({
-			email: currentUser.email
+			email: currentUser.email,
+			nome: nome,
 		});
 	} catch (err) {
 		Alert.alert(err.message);

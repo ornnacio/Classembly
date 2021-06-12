@@ -29,7 +29,7 @@ function MenuPerfil(){
 	const navigation = useNavigation();
 	
 	let currentUserUID = firebase.auth().currentUser.uid;
-	const [email, setEmail] = useState('');
+	const [nome, setNome] = useState('');
 
 	useEffect(() => {
 		
@@ -42,7 +42,7 @@ function MenuPerfil(){
 
 			if (doc.exists){
 				let dataObj = doc.data();
-				setEmail(dataObj.email);
+				setNome(dataObj.nome);
 			}
 		}
 		
@@ -57,7 +57,7 @@ function MenuPerfil(){
 	return(
 		<View style={styles.containerMenu}>
 			<Image style={styles.logo1} source={logo} />
-			<Text style={styles.txtbotaoTransparente}>{email}</Text>
+			<Text style={styles.txtbotaoTransparente}>Logado como {nome}</Text>
 			<TouchableOpacity style={styles.butao} onPress={press}>
 				<Text style={styles.txtbotao}>Sair</Text>
 			</TouchableOpacity>

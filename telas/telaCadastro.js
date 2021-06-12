@@ -11,11 +11,13 @@ import { cadastro } from "../firebase/firebaseMethods.js";
 export default function telaCadastro({ navigation }){
 	
 	const [email, setEmail] = React.useState('');
+	const [nome, setNome] = useState('');
 	const [senha, setSenha] = React.useState('');
 	const [confSenha, setConfSenha] = React.useState('');
 	
 	const emptyState = () => {
 		setEmail('');
+		setNome('');
 		setSenha('');
 		setConfSenha('');
 	};
@@ -27,7 +29,7 @@ export default function telaCadastro({ navigation }){
 		}else if(senha !== confSenha){
 			alert("As senhas diferem");
 		}else{
-			cadastro(email, senha);
+			cadastro(email, senha, nome);
 			navigation.navigate("Login");
 			emptyState();
 		}
@@ -37,8 +39,9 @@ export default function telaCadastro({ navigation }){
 		<View style={styles.container}>
 			<Image style={styles.logo2} source={logo} />
 			<TextInput style={styles.txtinput} placeholder='Email Institucional' placeholderTextColor='#d9d9d9' onChangeText={setEmail} value={email}/>
-			<TextInput style={styles.txtinput} placeholder='Senha' placeholderTextColor='#d9d9d9' secureTextEntry = {false} onChangeText={setSenha} value={senha}/>
-			<TextInput style={styles.txtinput} placeholder='Confirmar senha' placeholderTextColor='#d9d9d9' secureTextEntry = {false} onChangeText={setConfSenha} value={confSenha}/>
+			<TextInput style={styles.txtinput} placeholder='Nome completo' placeholderTextColor='#d9d9d9' onChangeText={setNome} value={nome}/>
+			<TextInput style={styles.txtinput} placeholder='Senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setSenha} value={senha}/>
+			<TextInput style={styles.txtinput} placeholder='Confirmar senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setConfSenha} value={confSenha}/>
 			<TouchableOpacity style={styles.butao} onPress={press}>
 				<Text style={styles.txtbotao}>Cadastrar</Text>
 			</TouchableOpacity>

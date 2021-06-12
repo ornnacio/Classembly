@@ -1,23 +1,50 @@
 import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, state, Component, useEffect } from 'react';
+import React, { useState, state, Component, useEffect, useLayoutEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import firebase from 'firebase';
 import 'firebase/firestore';
 import { DataTable } from 'react-native-paper';
-import ModalDropdown from 'react-native-modal-dropdown';
-
-import { IDContext } from "./context.js";
+import { ExpandableListView } from 'react-native-expandable-listview';
+import { IDContext, stringify } from "./context.js";
 
 import visualizarTurmas from "./assets/visualizarTurmas.png";
 import cadastrarEstatisticas from "./assets/cadastrarEstatisticas.png";
 
 const Stack = createStackNavigator();
 
-let arrNome = [], arrComp = [], arrModo = [];
+let arrNome = [], arrComp = [], arrModo = [], arrAlunos = [];
 
 function telaGerenciarTurmas({route, navigation}){
+	
+	const [alunosDados, setAlunosDados] = React.useState([]);
+	const idTurma = React.useContext(IDContext);
+	
+	useEffect(() => {
+	
+		async function getAlunos(){
+			
+			let doc = await firebase
+			.firestore()
+			.collection('turmas')
+			.doc(idTurma)
+			.collection('alunos')
+			.onSnapshot((query) => {
+				
+				const list = [];
+				
+				query.forEach((doc) => {
+					list.push(doc.data().nome);
+				})
+				
+				setAlunosDados(list);
+			})
+		}
+		
+		getAlunos();
+	
+	})
 	
 	return(
 		<View style={styles.container}>
@@ -25,9 +52,9 @@ function telaGerenciarTurmas({route, navigation}){
 				<Image style={styles.iconBotao} source={visualizarTurmas}/>
 				<Text style={styles.txtbotaohome}>Visualizar e Editar Parecer da Turma</Text>
 			</TouchableOpacity>
-			<TouchableOpacity style={styles.butaoHome}>
+			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("ComentáriosIndividuais", {nomes: alunosDados})}>
 				<Image style={styles.iconBotao} source={cadastrarEstatisticas} />
-				<Text style={styles.txtbotaohome}>Visualizar e Cadstrar Comentários Individuais</Text>
+				<Text style={styles.txtbotaohome}>Visualizar e Cadastrar Comentários Individuais</Text>
 			</TouchableOpacity>
 		</View>
 	);
@@ -36,7 +63,7 @@ function telaGerenciarTurmas({route, navigation}){
 function telaVisualizarTurma({navigation}){
 	
 	const[alunos, setAlunos] = React.useState([]);
-	const a = React.useContext(IDContext);
+	const idTurma = React.useContext(IDContext);
 	let c = -1;
 	
 	useEffect(() => {
@@ -46,7 +73,7 @@ function telaVisualizarTurma({navigation}){
 			let doc = await firebase
 			.firestore()
 			.collection('turmas')
-			.doc(a)
+			.doc(idTurma)
 			.collection('alunos')
 			.onSnapshot((query) => {
 				
@@ -59,6 +86,7 @@ function telaVisualizarTurma({navigation}){
 				setAlunos(list);
 			})
 		}
+		
 		
 		getUserInfo();
 	})
@@ -156,11 +184,83 @@ function telaVisualizarTurma({navigation}){
 	);
 }
 
+class aluno {
+	
+	constructor(nome, comentarios){
+		this.nome = nome;
+		this.comentarios = comentarios;
+	}
+	
+	print(){
+		return 'aluninho top ' + this.nome + ' - ' + JSON.stringify(this.comentarios);
+	}
+}
+
+function telaComentarios({ route, navigation }){
+	
+	const [alunos, setAlunos] = React.useState([]);
+	const idTurma = React.useContext(IDContext);
+	
+	useLayoutEffect(() => {
+		
+		async function getComentarios(){
+			
+			for(const [i, v] of route.params.nomes.entries()){
+				
+				let str = 'a' + (i+1);
+				
+				let doc = await firebase
+				.firestore()
+				.collection('turmas')
+				.doc(idTurma)
+				.collection('alunos')
+				.doc(str)
+				.collection('comentarios')
+				.onSnapshot((query) => {
+					
+					const teste = [];
+					
+					query.forEach((doc) => {
+						teste.push(doc.data());
+					})
+
+					const a = new aluno(v, teste);
+					arrAlunos.push(a);
+					
+					if((i+1) === route.params.nomes.length){
+						setAlunos(arrAlunos);
+					}
+				})
+				
+			}
+		}
+		
+		getComentarios();
+		
+	}, [])
+	
+	return(
+		<View style={styles.container}>
+			{alunos.map((a) => {
+			
+				return(
+					<Text>{a.print()}</Text>
+				);
+			
+			})}
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainGerencTurmas")}>
+				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
+			</TouchableOpacity>
+		</View>
+	);
+}
+
 export default function stackGerenciarTurmas({navigation}){
 	return(
 		<Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="MainGerencTurmas">
 			<Stack.Screen name={"MainGerencTurmas"} component={telaGerenciarTurmas} />
 			<Stack.Screen name={"VisualizarTurma"} component={telaVisualizarTurma} />
+			<Stack.Screen name={"ComentáriosIndividuais"} component={telaComentarios} />
 		</Stack.Navigator>
 	);
 }
