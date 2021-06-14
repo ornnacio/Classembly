@@ -176,6 +176,7 @@ const styles = StyleSheet.create({
 		flexGrow: 1, 
 		justifyContent: 'center', 
 		alignItems: 'center',
+		width: Dimensions.get('window').width,
 	},
   
 	iconBotao: {

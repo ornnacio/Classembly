@@ -1,13 +1,14 @@
 import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect, useLayoutEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button, ScrollView, Dimensions } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import firebase from 'firebase';
 import 'firebase/firestore';
-import { DataTable } from 'react-native-paper';
+import { DataTable, List } from 'react-native-paper';
 import { ExpandableListView } from 'react-native-expandable-listview';
-import { IDContext, stringify } from "./context.js";
+import ModalDropdown from 'react-native-modal-dropdown';
+import { IDContext } from "./context.js";
 
 import visualizarTurmas from "./assets/visualizarTurmas.png";
 import cadastrarEstatisticas from "./assets/cadastrarEstatisticas.png";
@@ -24,16 +25,16 @@ function telaGerenciarTurmas({route, navigation}){
 	useEffect(() => {
 	
 		async function getAlunos(){
-			
+				
 			let doc = await firebase
 			.firestore()
 			.collection('turmas')
 			.doc(idTurma)
 			.collection('alunos')
 			.onSnapshot((query) => {
-				
+					
 				const list = [];
-				
+					
 				query.forEach((doc) => {
 					list.push(doc.data().nome);
 				})
@@ -41,9 +42,9 @@ function telaGerenciarTurmas({route, navigation}){
 				setAlunosDados(list);
 			})
 		}
-		
+			
 		getAlunos();
-	
+		
 	})
 	
 	return(
@@ -100,7 +101,7 @@ function telaVisualizarTurma({navigation}){
 			firebase
 			.firestore()
 			.collection('turmas')
-			.doc(a)
+			.doc(idTurma)
 			.collection('alunos')
 			.doc(str)
 			.set({
@@ -186,13 +187,20 @@ function telaVisualizarTurma({navigation}){
 
 class aluno {
 	
-	constructor(nome, comentarios){
+	constructor(nome, comentarios, id){
 		this.nome = nome;
 		this.comentarios = comentarios;
+		this.id = id;
 	}
 	
-	print(){
-		return 'aluninho top ' + this.nome + ' - ' + JSON.stringify(this.comentarios);
+	printComentarios(){
+		let s = '';
+		
+		this.comentarios.forEach((c) => {
+			s = s + 'Comentário de ' + c.autor + ': ' + c.txt + '\n';
+		})
+		
+		return s;
 	}
 }
 
@@ -200,10 +208,13 @@ function telaComentarios({ route, navigation }){
 	
 	const [alunos, setAlunos] = React.useState([]);
 	const idTurma = React.useContext(IDContext);
+	let width = 0.9 * Dimensions.get('window').width;
 	
 	useLayoutEffect(() => {
 		
 		async function getComentarios(){
+			
+			arrAlunos = [];
 			
 			for(const [i, v] of route.params.nomes.entries()){
 				
@@ -218,13 +229,13 @@ function telaComentarios({ route, navigation }){
 				.collection('comentarios')
 				.onSnapshot((query) => {
 					
-					const teste = [];
+					const list = [];
 					
 					query.forEach((doc) => {
-						teste.push(doc.data());
+						list.push(doc.data());
 					})
 
-					const a = new aluno(v, teste);
+					const a = new aluno(v, list, str);
 					arrAlunos.push(a);
 					
 					if((i+1) === route.params.nomes.length){
@@ -241,14 +252,38 @@ function telaComentarios({ route, navigation }){
 	
 	return(
 		<View style={styles.container}>
-			{alunos.map((a) => {
-			
-				return(
-					<Text>{a.print()}</Text>
-				);
-			
-			})}
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainGerencTurmas")}>
+			<ScrollView contentContainerStyle={styles.containerScroll}>
+				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+					{alunos.map((a) => {
+					
+						return(
+							<List.Section style={styles.listSection}>
+								<List.Accordion title={a.nome}>
+									<Text style={{}}>{a.printComentarios()}</Text>
+									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id})}>
+										<Text style={{}}>Adicionar novo comentário</Text>
+									</TouchableOpacity>
+								</List.Accordion>
+							</List.Section>
+						);
+					})}
+					<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainGerencTurmas")}>
+						<Text style={styles.txtbotaohomePuro}>Voltar</Text>
+					</TouchableOpacity>
+				</View>
+			</ScrollView>
+		</View>
+	);
+}
+
+function telaEscreverComentario({ route, navigation }){
+	
+	let idAluno = route.params.id;
+	
+	return(
+		<View style={styles.container}>
+			<Text>{idAluno}</Text>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("ComentáriosIndividuais")}>
 				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
 		</View>
@@ -261,6 +296,7 @@ export default function stackGerenciarTurmas({navigation}){
 			<Stack.Screen name={"MainGerencTurmas"} component={telaGerenciarTurmas} />
 			<Stack.Screen name={"VisualizarTurma"} component={telaVisualizarTurma} />
 			<Stack.Screen name={"ComentáriosIndividuais"} component={telaComentarios} />
+			<Stack.Screen name={"EscreverComentário"} component={telaEscreverComentario} />
 		</Stack.Navigator>
 	);
 }
@@ -273,6 +309,13 @@ const styles = StyleSheet.create({
 		backgroundColor: '#f4f9fc',
 		alignItems: 'center',
 		justifyContent: 'center',
+	},
+  
+	containerScroll: {
+		flexGrow: 1, 
+		justifyContent: 'center', 
+		alignItems: 'center',
+		width: Dimensions.get('window').width,
 	},
   
 	iconBotao: {
@@ -329,6 +372,27 @@ const styles = StyleSheet.create({
 	
 	txtDropdownBotao: {
 		fontSize: 14,
+	},
+	
+	listSection: {
+		width: 0.9 * Dimensions.get('window').width, 
+		marginBottom: 25, 
+		backgroundColor: '#d9d9d9',
+		padding: 5, 
+		borderRadius: 5,
+		tintColor: '#766ec5',
+	},
+	
+	botaoAddComentario: {
+		height: 50, 
+		backgroundColor: '#69b00b', 
+		alignItems: 'center', 
+		width: 0.55 * Dimensions.get('window').width,
+		borderRadius: 5,
+		alignSelf: 'center',
+		textAlign: 'center',
+		justifyContent: 'center', 
+		alignItems: 'center',
 	},
  
 });
