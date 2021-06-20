@@ -94,7 +94,8 @@ function TelaSelectTurma(){
 			let doc = await firebase
 			.firestore()
 			.collection('turmas')
-			.onSnapshot((query) => {
+			.get()
+			.then((query) => {
 				
 				const list = [];
 				

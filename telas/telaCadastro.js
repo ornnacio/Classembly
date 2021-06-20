@@ -11,7 +11,7 @@ import { cadastro } from "../firebase/firebaseMethods.js";
 export default function telaCadastro({ navigation }){
 	
 	const [email, setEmail] = React.useState('');
-	const [nome, setNome] = useState('');
+	const [nome, setNome] = React.useState('');
 	const [senha, setSenha] = React.useState('');
 	const [confSenha, setConfSenha] = React.useState('');
 	
@@ -33,6 +33,7 @@ export default function telaCadastro({ navigation }){
 			navigation.navigate("Login");
 			emptyState();
 		}
+		
 	}	
 	
 	return(

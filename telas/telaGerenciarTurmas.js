@@ -1,11 +1,12 @@
 import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect, useLayoutEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Button, ScrollView, Dimensions } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useIsFocused } from '@react-navigation/native';
 import firebase from 'firebase';
 import 'firebase/firestore';
-import { DataTable, List } from 'react-native-paper';
+import { DataTable, List, TextInput } from 'react-native-paper';
 import { ExpandableListView } from 'react-native-expandable-listview';
 import ModalDropdown from 'react-native-modal-dropdown';
 import { IDContext } from "./context.js";
@@ -25,16 +26,17 @@ function telaGerenciarTurmas({route, navigation}){
 	useEffect(() => {
 	
 		async function getAlunos(){
-				
+			
 			let doc = await firebase
 			.firestore()
 			.collection('turmas')
 			.doc(idTurma)
 			.collection('alunos')
-			.onSnapshot((query) => {
-					
+			.get()
+			.then((query) => {
+				
 				const list = [];
-					
+				
 				query.forEach((doc) => {
 					list.push(doc.data().nome);
 				})
@@ -42,7 +44,7 @@ function telaGerenciarTurmas({route, navigation}){
 				setAlunosDados(list);
 			})
 		}
-			
+		
 		getAlunos();
 		
 	})
@@ -76,7 +78,8 @@ function telaVisualizarTurma({navigation}){
 			.collection('turmas')
 			.doc(idTurma)
 			.collection('alunos')
-			.onSnapshot((query) => {
+			.get()
+			.then((query) => {
 				
 				const list = [];
 				
@@ -209,8 +212,9 @@ function telaComentarios({ route, navigation }){
 	const [alunos, setAlunos] = React.useState([]);
 	const idTurma = React.useContext(IDContext);
 	let width = 0.9 * Dimensions.get('window').width;
+	const isFocused = useIsFocused();
 	
-	useLayoutEffect(() => {
+	useEffect(() => {
 		
 		async function getComentarios(){
 			
@@ -220,14 +224,15 @@ function telaComentarios({ route, navigation }){
 				
 				let str = 'a' + (i+1);
 				
-				let doc = await firebase
+				firebase
 				.firestore()
 				.collection('turmas')
 				.doc(idTurma)
 				.collection('alunos')
 				.doc(str)
 				.collection('comentarios')
-				.onSnapshot((query) => {
+				.get()
+				.then((query) => {
 					
 					const list = [];
 					
@@ -248,7 +253,7 @@ function telaComentarios({ route, navigation }){
 		
 		getComentarios();
 		
-	}, [])
+	}, [isFocused])
 	
 	return(
 		<View style={styles.container}>
@@ -260,7 +265,7 @@ function telaComentarios({ route, navigation }){
 							<List.Section style={styles.listSection}>
 								<List.Accordion title={a.nome}>
 									<Text style={{}}>{a.printComentarios()}</Text>
-									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id})}>
+									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios.length})}>
 										<Text style={{}}>Adicionar novo comentário</Text>
 									</TouchableOpacity>
 								</List.Accordion>
@@ -278,11 +283,67 @@ function telaComentarios({ route, navigation }){
 
 function telaEscreverComentario({ route, navigation }){
 	
+	const [txt, setTxt] = React.useState('');
+	const [nome, setNome] = React.useState('');
 	let idAluno = route.params.id;
+	let lastC = route.params.lastC + 1;
+	let currentUserUID = firebase.auth().currentUser.uid;
+	const idTurma = React.useContext(IDContext);
+	
+	useEffect(() => {
+		
+		async function getUserInfo(){
+			let doc = await firebase
+			.firestore()
+			.collection('users')
+			.doc(currentUserUID)
+			.get();
+
+			if (doc.exists){
+				let dataObj = doc.data();
+				setNome(dataObj.nome);
+			}
+		}
+		
+		getUserInfo();
+		
+	});
+	
+	function press(){
+		
+		var idLast = String(lastC).padStart(3, '0')
+		let strAtual = 'c' + idLast;
+	
+		firebase
+		.firestore()
+		.collection('turmas')
+		.doc(idTurma)
+		.collection('alunos')
+		.doc(idAluno)
+		.collection('comentarios')
+		.doc(strAtual)
+		.set({
+			txt: txt,
+			autor: nome,
+		});
+		
+		alert('Comentário salvo com sucesso!');
+		navigation.navigate('ComentáriosIndividuais');
+	}
 	
 	return(
 		<View style={styles.container}>
-			<Text>{idAluno}</Text>
+			<TextInput
+				style={styles.inputBox}
+				underlineColor='#766ec5'
+				multiline={true}
+				numberOfLines={6}
+				onChangeText={(text) => setTxt(text)}
+				value={txt}
+			/>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => press()}>
+				<Text style={styles.txtbotaohomePuro}>Salvar Comentário</Text>
+			</TouchableOpacity>
 			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("ComentáriosIndividuais")}>
 				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
@@ -393,6 +454,12 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 		justifyContent: 'center', 
 		alignItems: 'center',
+	},
+	
+	inputBox: { 
+		margin: 25, 
+		borderRadius: 5, 
+		width: 0.7 * Dimensions.get('window').width, 
 	},
  
 });

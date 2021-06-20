@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import firebase from 'firebase'
-require('firebase/auth')
+import firebase from 'firebase';
 
 export default function LoadingScreen({ navigation }) {
 	
