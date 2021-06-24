@@ -119,9 +119,9 @@ function TelaSelectTurma(){
 	return(
 		<View style={styles.container}>
 			<Text style={styles.txtbotao}>Selecione uma turma</Text>
-			{turmas.map((t) => {
+			{turmas.map((t, index) => {
 				return(
-					<TouchableOpacity style={styles.butaoHome} onPress={() => press(t)}>
+					<TouchableOpacity key={index} style={styles.butaoHome} onPress={() => press(t)}>
 						<Text style={styles.txtbotaohomePuro}>{t.toUpperCase()}</Text>
 					</TouchableOpacity>
 				);

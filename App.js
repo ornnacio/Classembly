@@ -16,7 +16,7 @@ import logo from "./assets/logo.png";
 
 //funções e consts 
 const Stack = createStackNavigator();
-console.disableYellowBox = true; //ignora warnings, principalmente do codigo do SideMenu q é de 2017 
+console.disableYellowBox = true; 
 
 //app em si
 

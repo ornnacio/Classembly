@@ -101,17 +101,21 @@ function telaVisualizarTurma({navigation}){
 			
 			let str = 'a' + (i + 1);
 			
-			firebase
-			.firestore()
-			.collection('turmas')
-			.doc(idTurma)
-			.collection('alunos')
-			.doc(str)
-			.set({
-				nome: arrNome[i],
-				comp: arrComp[i],
-				aprendizado: arrModo[i],
-			});
+			try{
+				firebase
+				.firestore()
+				.collection('turmas')
+				.doc(idTurma)
+				.collection('alunos')
+				.doc(str)
+				.set({
+					nome: arrNome[i],
+					comp: arrComp[i],
+					aprendizado: arrModo[i],
+				});
+			}catch(e){
+				alert(e.message);
+			}
 		}
 		
 		alert("Alterações salvas com sucesso");
@@ -427,12 +431,12 @@ const styles = StyleSheet.create({
 	},
 	
 	txtDropdown:{
-		fontSize: 14,
+		fontSize: 12,
 		fontFamily: 'sans-serif',
 	},
 	
 	txtDropdownBotao: {
-		fontSize: 14,
+		fontSize: 12,
 	},
 	
 	listSection: {
