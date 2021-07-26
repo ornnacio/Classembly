@@ -21,33 +21,37 @@ let arrNome = [], arrComp = [], arrModo = [], arrAlunos = [];
 function telaGerenciarTurmas({route, navigation}){
 	
 	const [alunosDados, setAlunosDados] = React.useState([]);
+	const [prontoDados, setProntoDados] = React.useState(false);
 	const idTurma = React.useContext(IDContext);
 	
 	useEffect(() => {
 	
 		async function getAlunos(){
 			
-			let doc = await firebase
-			.firestore()
-			.collection('turmas')
-			.doc(idTurma)
-			.collection('alunos')
-			.get()
-			.then((query) => {
-				
-				const list = [];
-				
-				query.forEach((doc) => {
-					list.push(doc.data().nome);
+			if(!prontoDados){
+				let doc = await firebase
+				.firestore()
+				.collection('turmas')
+				.doc(idTurma)
+				.collection('alunos')
+				.get()
+				.then((query) => {
+					
+					const list = [];
+					
+					query.forEach((doc) => {
+						list.push(doc.data().nome);
+					})
+					
+					setAlunosDados(list);
+					setProntoDados(true);
 				})
-				
-				setAlunosDados(list);
-			})
+			}
 		}
 		
 		getAlunos();
 		
-	})
+	}, [])
 	
 	return(
 		<View style={styles.container}>
@@ -65,7 +69,8 @@ function telaGerenciarTurmas({route, navigation}){
 
 function telaVisualizarTurma({navigation}){
 	
-	const[alunos, setAlunos] = React.useState([]);
+	const [alunos, setAlunos] = React.useState([]);
+	const [prontoAlunos, setProntoAlunos] = React.useState(false);
 	const idTurma = React.useContext(IDContext);
 	let c = -1;
 	
@@ -73,27 +78,32 @@ function telaVisualizarTurma({navigation}){
 		
 		async function getUserInfo(){
 			
-			let doc = await firebase
-			.firestore()
-			.collection('turmas')
-			.doc(idTurma)
-			.collection('alunos')
-			.get()
-			.then((query) => {
+			if(!prontoAlunos){
 				
-				const list = [];
-				
-				query.forEach((doc) => {
-					list.push(doc.data());
+				let doc = await firebase
+				.firestore()
+				.collection('turmas')
+				.doc(idTurma)
+				.collection('alunos')
+				.get()
+				.then((query) => {
+					
+					const list = [];
+					
+					query.forEach((doc) => {
+						list.push(doc.data());
+					})
+					
+					setAlunos(list);
+					setProntoAlunos(true);
 				})
-				
-				setAlunos(list);
-			})
+			}
 		}
 		
 		
 		getUserInfo();
-	})
+		
+	}, [])
 	
 	async function press(){
 		
@@ -184,10 +194,6 @@ function telaVisualizarTurma({navigation}){
 			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
 				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
 			</TouchableOpacity>
-			
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainGerencTurmas")}>
-				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
-			</TouchableOpacity>
 		</View>
 	);
 }
@@ -268,17 +274,14 @@ function telaComentarios({ route, navigation }){
 						return(
 							<List.Section style={styles.listSection}>
 								<List.Accordion title={a.nome}>
-									<Text style={{}}>{a.printComentarios()}</Text>
+									<Text style={{ marginBottom: 5, padding: 5 }}>{a.printComentarios()}</Text>
 									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios.length})}>
-										<Text style={{}}>Adicionar novo comentário</Text>
+										<Text style={{ color: '#f4f9fc' }}>Adicionar novo comentário</Text>
 									</TouchableOpacity>
 								</List.Accordion>
 							</List.Section>
 						);
 					})}
-					<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainGerencTurmas")}>
-						<Text style={styles.txtbotaohomePuro}>Voltar</Text>
-					</TouchableOpacity>
 				</View>
 			</ScrollView>
 		</View>
@@ -289,6 +292,7 @@ function telaEscreverComentario({ route, navigation }){
 	
 	const [txt, setTxt] = React.useState('');
 	const [nome, setNome] = React.useState('');
+	const [prontoNome, setProntoNome] = React.useState(false);
 	let idAluno = route.params.id;
 	let lastC = route.params.lastC + 1;
 	let currentUserUID = firebase.auth().currentUser.uid;
@@ -297,21 +301,24 @@ function telaEscreverComentario({ route, navigation }){
 	useEffect(() => {
 		
 		async function getUserInfo(){
-			let doc = await firebase
-			.firestore()
-			.collection('users')
-			.doc(currentUserUID)
-			.get();
+			
+			if(!prontoNome){
+				let doc = await firebase
+				.firestore()
+				.collection('users')
+				.doc(currentUserUID)
+				.get();
 
-			if (doc.exists){
-				let dataObj = doc.data();
-				setNome(dataObj.nome);
+				if (doc.exists){
+					let dataObj = doc.data();
+					setNome(dataObj.nome);
+				}
 			}
 		}
 		
 		getUserInfo();
 		
-	});
+	}, []);
 	
 	function press(){
 		
@@ -348,20 +355,40 @@ function telaEscreverComentario({ route, navigation }){
 			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => press()}>
 				<Text style={styles.txtbotaohomePuro}>Salvar Comentário</Text>
 			</TouchableOpacity>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("ComentáriosIndividuais")}>
-				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
-			</TouchableOpacity>
 		</View>
 	);
 }
 
 export default function stackGerenciarTurmas({navigation}){
+	
 	return(
-		<Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="MainGerencTurmas">
-			<Stack.Screen name={"MainGerencTurmas"} component={telaGerenciarTurmas} />
-			<Stack.Screen name={"VisualizarTurma"} component={telaVisualizarTurma} />
-			<Stack.Screen name={"ComentáriosIndividuais"} component={telaComentarios} />
-			<Stack.Screen name={"EscreverComentário"} component={telaEscreverComentario} />
+		<Stack.Navigator initialRouteName="MainGerencTurmas" screenOptions={{headerStyle: {backgroundColor: '#766ec5'}, headerTintColor: '#f4f9fc'}}>
+			<Stack.Screen 
+				name={"MainGerencTurmas"} 
+				component={telaGerenciarTurmas} 
+				options={{headerShown: false}} 
+			/>
+			<Stack.Screen 
+				name={"VisualizarTurma"} 
+				component={telaVisualizarTurma} 
+				options={{
+					title: 'Visualizar turma'
+				}}
+			/>
+			<Stack.Screen 
+				name={"ComentáriosIndividuais"}
+				component={telaComentarios}
+				options={{
+					title: 'Ver comentários'
+				}} 
+			/>
+			<Stack.Screen 
+				name={"EscreverComentário"}
+				component={telaEscreverComentario} 
+				options={{
+					title: 'Escrever comentário'
+				}} 
+			/>
 		</Stack.Navigator>
 	);
 }
@@ -430,6 +457,13 @@ const styles = StyleSheet.create({
 		width: "80%",
 	},
 	
+	butaoHomePuroFinal: {
+		backgroundColor: '#766ec5',
+		padding: 5,
+		borderRadius: 5,
+		width: "80%",
+	},
+	
 	txtDropdown:{
 		fontSize: 12,
 		fontFamily: 'sans-serif',
@@ -450,7 +484,7 @@ const styles = StyleSheet.create({
 	
 	botaoAddComentario: {
 		height: 50, 
-		backgroundColor: '#69b00b', 
+		backgroundColor: '#766ec5', 
 		alignItems: 'center', 
 		width: 0.55 * Dimensions.get('window').width,
 		borderRadius: 5,

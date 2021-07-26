@@ -1,10 +1,10 @@
 import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, SafeAreaView, TextInput, Image, TouchableOpacity, Alert, Button, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, Button, Dimensions } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
-import { Card, Title, Paragraph } from 'react-native-paper';
+import { Card, Title, Paragraph, TextInput } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
 
@@ -30,12 +30,10 @@ function telaPrepConselho({navigation}){
 }
 
 function telaImportarNotas({navigation}){
+	
 	return(
 		<View style={styles.container}>
 			<Text>placeholder 1</Text>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainPrepConselho")}>
-				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
-			</TouchableOpacity>
 		</View>
 	);
 }
@@ -43,6 +41,7 @@ function telaImportarNotas({navigation}){
 function telaAutoAval({navigation}){
 	
 	const [avalArr, setAvalArr] = useState([]);
+	const [prontoAval, setProntoAval] = useState(false); 
 	let currentUserUID = firebase.auth().currentUser.uid;
 	let lastAval = 0;
 	let width = 0.9 * Dimensions.get('window').width;
@@ -51,25 +50,28 @@ function telaAutoAval({navigation}){
 		
 		async function getAutoAvaliações(){
 			
-			let doc = await firebase
-			.firestore()
-			.collection('users')
-			.doc(currentUserUID)
-			.collection('autoaval')
-			.onSnapshot((query) => {
-				
-				const list = [];
-				
-				query.forEach((doc) => {
-					list.push(doc.data());
+			if(!prontoAval){
+				let doc = await firebase
+				.firestore()
+				.collection('users')
+				.doc(currentUserUID)
+				.collection('autoaval')
+				.onSnapshot((query) => {
+					
+					const list = [];
+					
+					query.forEach((doc) => {
+						list.push(doc.data());
+					})
+					
+					setAvalArr(list);
+					setProntoAval(true);
 				})
-				
-				setAvalArr(list);
-			})
+			}
 		}
 		
 		getAutoAvaliações();
-	})
+	}, [])
 	
 	return(
 		<View style={styles.container}>
@@ -90,9 +92,6 @@ function telaAutoAval({navigation}){
 					})}
 					<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("EscreverAutoAval", {lastAval})}>
 						<Text style={styles.txtbotaohomePuro}>Escrever Auto-Avaliação</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainPrepConselho")}>
-						<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 					</TouchableOpacity>
 				</View>
 			</ScrollView>
@@ -135,17 +134,15 @@ function telaEscreverAutoAval({ route }){
 	return(
 		<View style={styles.container}>
 			<TextInput
-				style={{backgroundColor: '#d9d9d9'}}
+				style={styles.inputBox}
+				underlineColor='#766ec5'
 				multiline={true}
-				numberOfLines={4}
+				numberOfLines={6}
 				onChangeText={(text) => setTxt(text)}
 				value={txt}
 			/>
 			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
 				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
-			</TouchableOpacity>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("AutoAval")}>
-				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
 			</TouchableOpacity>
 		</View>
 	);
@@ -153,11 +150,35 @@ function telaEscreverAutoAval({ route }){
 
 export default function stackPrepConselho({navigation}){
 	return(
-		<Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="MainPrepConselho">
-			<Stack.Screen name={"MainPrepConselho"} component={telaPrepConselho} />
-			<Stack.Screen name={"ImportarNotas"} component={telaImportarNotas} />
-			<Stack.Screen name={"AutoAval"} component={telaAutoAval} />
-			<Stack.Screen name={"EscreverAutoAval"} component={telaEscreverAutoAval} />
+		<Stack.Navigator screenOptions={{headerStyle: {backgroundColor: '#766ec5'}, headerTintColor: '#f4f9fc'}} initialRouteName="MainPrepConselho">
+			<Stack.Screen 
+				name={"MainPrepConselho"}
+				component={telaPrepConselho}
+				options={{
+					headerShown: false
+				}}
+			/>
+			<Stack.Screen 
+				name={"ImportarNotas"} 
+				component={telaImportarNotas} 
+				options={{
+					title: 'Importar notas'
+				}}
+			/>
+			<Stack.Screen 
+				name={"AutoAval"} 
+				component={telaAutoAval} 
+				options={{
+					title: 'Auto-avaliação'
+				}}
+			/>
+			<Stack.Screen 
+				name={"EscreverAutoAval"} 
+				component={telaEscreverAutoAval} 
+				options={{
+					title: 'Escrever auto-avaliação'
+				}}
+			/>
 		</Stack.Navigator>
 	);
 }
@@ -224,6 +245,12 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 		marginBottom: 50,
 		width: "80%",
-	},	
+	},
+	
+	inputBox: { 
+		margin: 25, 
+		borderRadius: 5, 
+		width: 0.7 * Dimensions.get('window').width, 
+	},
  
 });

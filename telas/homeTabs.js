@@ -30,24 +30,29 @@ function MenuPerfil(){
 	
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const [nome, setNome] = useState('');
+	const [prontoNome, setProntoNome] = useState(false);
 
 	useEffect(() => {
 		
 		async function getUserInfo(){
-			let doc = await firebase
-			.firestore()
-			.collection('users')
-			.doc(currentUserUID)
-			.get();
+			
+			if(!prontoNome){
+				let doc = await firebase
+				.firestore()
+				.collection('users')
+				.doc(currentUserUID)
+				.get();
 
-			if (doc.exists){
-				let dataObj = doc.data();
-				setNome(dataObj.nome);
+				if (doc.exists){
+					let dataObj = doc.data();
+					setNome(dataObj.nome);
+					setProntoNome(true);
+				}
 			}
 		}
 		
 		getUserInfo();
-	})
+	});
 	
 	const press = () => {
 		logout();
@@ -72,49 +77,66 @@ function TelaSelectTurma(){
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const [email, setEmail] = useState('');
 	const [turmas, setTurmas] = useState([]);
+	const [prontoEmail, setProntoEmail] = useState(false);
+	const [prontoTurmas, setProntoTurmas] = useState(false);
 
 	useEffect(() => {
 		
 		async function getUserInfo(){
-			let doc = await firebase
-			.firestore()
-			.collection('users')
-			.doc(currentUserUID)
-			.get();
+			
+			if(!prontoEmail){
+			
+				let doc = await firebase
+				.firestore()
+				.collection('users')
+				.doc(currentUserUID)
+				.get();
 
-			if (doc.exists){
-				let dataObj = doc.data();
-				setEmail(dataObj.email);
+				if (doc.exists){
+					let dataObj = doc.data();
+					setEmail(dataObj.email);
+					setProntoEmail(true);
+				}
 			}
 		}
 		
 		getUserInfo();
 		
 		async function getTurmas(){
-			let doc = await firebase
-			.firestore()
-			.collection('turmas')
-			.get()
-			.then((query) => {
-				
-				const list = [];
-				
-				query.forEach((doc) => {
-					if(doc.data().professor === email){
-						list.push(doc.id);
-					}
+			
+			if(!prontoTurmas){
+			
+				let doc = await firebase
+				.firestore()
+				.collection('turmas')
+				.get()
+				.then((query) => {
+					
+					const list = [];
+					
+					query.forEach((doc) => {
+						if(doc.data().professor === email){
+							list.push(doc.id);
+						}
+					})
+					
+					setTurmas(list);
+					setProntoTurmas(true);
 				})
-				
-				setTurmas(list);
-			})
+			}
 		}
 		
 		getTurmas();
-	})
+	});
 	
 	function press(id){
 		navigation.navigate("HomeTabs", { id: id });
 	}
+	
+	function sair(){
+		logout();
+		navigation.navigate('Loading');
+	};
 	
 	return(
 		<View style={styles.container}>
@@ -126,6 +148,9 @@ function TelaSelectTurma(){
 					</TouchableOpacity>
 				);
 			})}
+			<TouchableOpacity style={styles.butaoSair} onPress={() => sair()}>
+				<Text style={styles.txtbotaohomePuro}>Sair</Text>
+			</TouchableOpacity>
 		</View>
 	);
 }
@@ -197,9 +222,10 @@ const styles = StyleSheet.create({
 	},
   
 	logo1: {
-		height: 70,
-		width: 262,
+		width: "90%",
+		height: undefined,
 		marginBottom: 150,
+		aspectRatio: 1233/333,
 	},
   
 	txtbotaohome: {
@@ -214,7 +240,14 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 		marginBottom: 50,
 		width: "80%",
-	},	
+	},
+	
+	butaoSair: {
+		backgroundColor: '#766ec5',
+		padding: 5,
+		borderRadius: 5,
+		marginBottom: 50,
+	},
 
 	butao: {
 		backgroundColor: '#ffffff',

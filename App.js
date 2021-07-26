@@ -28,7 +28,7 @@ export default function App({ navigation }){
 	
 	return (
 		<NavigationContainer>
-			<Stack.Navigator>
+			<Stack.Navigator initialRouteName="Loading">
 				<Stack.Screen name="Login" component={telaLogin} options={{headerTintColor: "#d9d9d9", headerStyle: {backgroundColor: '#766ec5', borderBottomWidth: 0, shadowColor: "transparent", elevation: 0,}}}/>
 				<Stack.Screen name="Cadastro" component={telaCadastro} options={{headerTintColor: "#d9d9d9", headerStyle: {backgroundColor: '#766ec5', borderBottomWidth: 0, shadowColor: "transparent", elevation: 0,}}}/>
 				<Stack.Screen name="Loading" component={telaLoading} options={{headerShown: false}}/>

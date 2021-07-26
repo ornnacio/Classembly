@@ -13,7 +13,7 @@ export default function LoadingScreen({ navigation }) {
 				navigation.replace('Login');
 			}
 		});
-	});
+	}, []);
 
 	return (
 		<View style={styles.container}>

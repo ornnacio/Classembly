@@ -34,9 +34,6 @@ function telaEstudantesPrio({navigation}){
 	return(
 		<View style={styles.container}>
 			<Text>placeholder 1</Text>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainVisualizarEstat")}>
-				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
-			</TouchableOpacity>
 		</View>
 	);
 }
@@ -45,9 +42,6 @@ function telaEstatIndividuais({navigation}){
 	return(
 		<View style={styles.container}>
 			<Text>placeholder 2</Text>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainVisualizarEstat")}>
-				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
-			</TouchableOpacity>
 		</View>
 	);
 }
@@ -56,20 +50,41 @@ function telaEstatComparadas({navigation}){
 	return(
 		<View style={styles.container}>
 			<Text>placeholder 3</Text>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("MainVisualizarEstat")}>
-				<Text style={styles.txtbotaohomePuro}>Voltar</Text>
-			</TouchableOpacity>
 		</View>
 	);
 }
 
 export default function stackVisualizarEstat({navigation}){
 	return(
-		<Stack.Navigator screenOptions={{headerShown: false}} initialRouteName="MainVisualizarEstat">
-			<Stack.Screen name={"MainVisualizarEstat"} component={telaVisualizarEstat} />
-			<Stack.Screen name={"EstudantesPrio"} component={telaEstudantesPrio} />
-			<Stack.Screen name={"EstatIndividuais"} component={telaEstatIndividuais} />
-			<Stack.Screen name={"EstatComparadas"} component={telaEstatComparadas} />
+		<Stack.Navigator screenOptions={{headerStyle: {backgroundColor: '#766ec5'}, headerTintColor: '#f4f9fc'}} initialRouteName="MainVisualizarEstat">
+			<Stack.Screen 
+				name={"MainVisualizarEstat"} 
+				component={telaVisualizarEstat} 
+				options={{
+					headerShown: false
+				}}
+			/>
+			<Stack.Screen 
+				name={"EstudantesPrio"} 
+				component={telaEstudantesPrio}
+				options={{
+					title: 'Estudantes com prioridade de discussão'
+				}}
+			/>
+			<Stack.Screen 
+				name={"EstatIndividuais"} 
+				component={telaEstatIndividuais} 
+				options={{
+					title: 'Visualizar estatísticas individuais'
+				}}
+			/>
+			<Stack.Screen 
+				name={"EstatComparadas"} 
+				component={telaEstatComparadas} 
+				options={{
+					title: 'Visualizar estatísticas comparadas'
+				}}
+			/>
 		</Stack.Navigator>
 	);
 }
