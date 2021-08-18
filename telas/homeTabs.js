@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Butt
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import SideMenu from 'react-native-side-menu';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import firebase from 'firebase';
 import "firebase/firestore";
 import { logout } from "../firebase/firebaseMethods.js";
@@ -23,8 +23,9 @@ import { IDContext } from "./context.js";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const Drawer = createDrawerNavigator();
 
-function MenuPerfil(){
+function MenuPerfil( props ){
 	
 	const navigation = useNavigation();
 	
@@ -62,7 +63,10 @@ function MenuPerfil(){
 	return(
 		<View style={styles.containerMenu}>
 			<Image style={styles.logo1} source={logo} />
-			<Text style={styles.txtbotaoTransparente}>Logado como {nome}</Text>
+			<Text style={{color: '#d9d9d9'}}>Logado como {nome}</Text>
+			<TouchableOpacity style={styles.butao} onPress={() => navigation.goBack()}>
+				<Text style={styles.txtbotao}>Selecionar turma</Text>
+			</TouchableOpacity>
 			<TouchableOpacity style={styles.butao} onPress={press}>
 				<Text style={styles.txtbotao}>Sair</Text>
 			</TouchableOpacity>
@@ -130,7 +134,10 @@ function TelaSelectTurma(){
 	});
 	
 	function press(id){
-		navigation.navigate("HomeTabs", { id: id });
+		navigation.navigate("HomeDrawer", {
+			screen: 'HomeTabs', 
+			params: { id: id, update: true }
+		});
 	}
 	
 	function sair(){
@@ -157,33 +164,38 @@ function TelaSelectTurma(){
 
 function homeTabs({route, navigation}){	
 
-	const menu = <MenuPerfil />
-
 	return(
 		<IDContext.Provider value={route.params.id}>
-			<SideMenu menu={menu}>
-				<Tab.Navigator tabBarOptions={{activeBackgroundColor: '#ffffff', inactiveBackgroundColor: '#ffffff', activeTintColor: '#766ec5',}} >
-					<Tab.Screen name="Gerenciar Turmas" component={stackGerenciarTurmas} options={{
-						tabBarIcon: () => (
-							<View>
-								<Image style={styles.iconTab} source={gerencTurmas}/>
-							</View>
-						),}}/>
-					<Tab.Screen name="Preparação Para o Conselho" component={stackPrepConselho} options={{
-						tabBarIcon: () => (
-							<View>
-								<Image style={styles.iconTab} source={prepConselho}/>
-							</View>
-						),}}/>
-					<Tab.Screen name="Visualizar Estatísticas" component={stackVisualizarEstat} options={{
-						tabBarIcon: () => (
-							<View>
-								<Image style={styles.iconTab} source={visualizarEstat}/>
-							</View>
-						),}}/>
-				</Tab.Navigator>
-			</SideMenu>
+			<Tab.Navigator tabBarOptions={{activeBackgroundColor: '#ffffff', inactiveBackgroundColor: '#ffffff', activeTintColor: '#766ec5',}} >
+				<Tab.Screen name="Gerenciar Turmas" component={stackGerenciarTurmas} options={{
+					tabBarIcon: () => (
+						<View>
+							<Image style={styles.iconTab} source={gerencTurmas}/>
+						</View>
+					),}}/>
+				<Tab.Screen name="Preparação Para o Conselho" component={stackPrepConselho} options={{
+					tabBarIcon: () => (
+						<View>
+							<Image style={styles.iconTab} source={prepConselho}/>
+						</View>
+					),}}/>
+				<Tab.Screen name="Visualizar Estatísticas" component={stackVisualizarEstat} options={{
+					tabBarIcon: () => (
+						<View>
+							<Image style={styles.iconTab} source={visualizarEstat}/>
+						</View>
+					),}}/>
+			</Tab.Navigator>
 		</IDContext.Provider>
+	);
+}
+
+function homeDrawer(){
+	
+	return(
+		<Drawer.Navigator drawerContent={(props) => <MenuPerfil {...props} />}>
+			<Drawer.Screen name="HomeTabs" component={homeTabs} />
+		</Drawer.Navigator>
 	);
 }
 
@@ -192,10 +204,11 @@ export default function homeStack(){
 	return(
 		<Stack.Navigator>
 			<Stack.Screen name="SelectTurma" component={TelaSelectTurma} options={{headerShown: false}}/>
-			<Stack.Screen name="HomeTabs" component={homeTabs} options={{headerShown: false}}/>
+			<Stack.Screen name="HomeDrawer" component={homeDrawer} options={{headerShown: false}}/>
 		</Stack.Navigator>
 	);
 }
+
 
 const styles = StyleSheet.create({
 	

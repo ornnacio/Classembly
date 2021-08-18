@@ -77,12 +77,12 @@ function telaAutoAval({navigation}){
 		<View style={styles.container}>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
 				<View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-					{avalArr.map((a) => {
+					{avalArr.map((a, index) => {
 						
 						lastAval += 1;
 						
 						return(
-							<Card style={{width: width, marginBottom: 15, marginTop: 15}}>
+							<Card style={{width: width, marginBottom: 15, marginTop: 15}} key={index}>
 								<Card.Content>
 								  <Title>Auto-Avaliação {a.data}</Title>
 								  <Paragraph>{a.txt}</Paragraph>

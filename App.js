@@ -11,7 +11,7 @@ import { firebaseConfig } from "./firebase/firebase.js";
 import telaLogin from "./telas/telaLogin.js";
 import telaCadastro from "./telas/telaCadastro.js";
 import telaLoading from "./telas/telaLoading.js";
-import homeStack from "./telas/homeTabs.js";
+import homeDrawer from "./telas/homeTabs.js";
 import logo from "./assets/logo.png";
 
 //funções e consts 
@@ -32,7 +32,7 @@ export default function App({ navigation }){
 				<Stack.Screen name="Login" component={telaLogin} options={{headerTintColor: "#d9d9d9", headerStyle: {backgroundColor: '#766ec5', borderBottomWidth: 0, shadowColor: "transparent", elevation: 0,}}}/>
 				<Stack.Screen name="Cadastro" component={telaCadastro} options={{headerTintColor: "#d9d9d9", headerStyle: {backgroundColor: '#766ec5', borderBottomWidth: 0, shadowColor: "transparent", elevation: 0,}}}/>
 				<Stack.Screen name="Loading" component={telaLoading} options={{headerShown: false}}/>
-				<Stack.Screen name="Home" component={homeStack} options={{headerShown: false}}/>
+				<Stack.Screen name="Home" component={homeDrawer} options={{headerShown: false}}/>
 			</Stack.Navigator>
 		</NavigationContainer>
 	);

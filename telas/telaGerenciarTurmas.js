@@ -29,6 +29,11 @@ function telaGerenciarTurmas({route, navigation}){
 		async function getAlunos(){
 			
 			if(!prontoDados){
+				
+				arrNome = [];
+				arrComp = [];
+				arrModo = [];
+				
 				let doc = await firebase
 				.firestore()
 				.collection('turmas')
@@ -79,7 +84,7 @@ function telaVisualizarTurma({navigation}){
 		async function getUserInfo(){
 			
 			if(!prontoAlunos){
-				
+
 				let doc = await firebase
 				.firestore()
 				.collection('turmas')
@@ -140,7 +145,7 @@ function telaVisualizarTurma({navigation}){
 					<DataTable.Title>Comportamento</DataTable.Title>
 					<DataTable.Title>Modo de aprendizado</DataTable.Title>
 				</DataTable.Row>
-				{alunos.map((a) => {
+				{alunos.map((a, index) => {
 					
 					let count = c + 1;
 					c = c + 1;
@@ -164,7 +169,7 @@ function telaVisualizarTurma({navigation}){
 					}
 					
 					return(
-						<DataTable.Row>
+						<DataTable.Row key={index}>
 							<DataTable.Cell>{arrNome[count]}</DataTable.Cell>
 							<DataTable.Cell>
 								<ModalDropdown 
@@ -269,10 +274,10 @@ function telaComentarios({ route, navigation }){
 		<View style={styles.container}>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
 				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-					{alunos.map((a) => {
+					{alunos.map((a, index) => {
 					
 						return(
-							<List.Section style={styles.listSection}>
+							<List.Section style={styles.listSection} key={index}>
 								<List.Accordion title={a.nome}>
 									<Text style={{ marginBottom: 5, padding: 5 }}>{a.printComentarios()}</Text>
 									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios.length})}>
