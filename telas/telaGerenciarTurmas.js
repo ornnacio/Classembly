@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect, useLayoutEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Button, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Button, ScrollView, Dimensions, Picker } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
 import firebase from 'firebase';
@@ -13,6 +13,7 @@ import { IDContext } from "./context.js";
 
 import visualizarTurmas from "./assets/visualizarTurmas.png";
 import cadastrarEstatisticas from "./assets/cadastrarEstatisticas.png";
+import downArrow from "./assets/down-arrow.png";
 
 const Stack = createStackNavigator();
 
@@ -139,7 +140,7 @@ function telaVisualizarTurma({navigation}){
 	
 	return(
 		<View style={styles.container}>
-			<DataTable style={{ width: '95%', marginBottom: 50 }}>
+			<DataTable style={{ width: '100%', marginBottom: 50 }}>
 				<DataTable.Row>
 					<DataTable.Title>Nome do aluno</DataTable.Title>
 					<DataTable.Title>Comportamento</DataTable.Title>
@@ -179,6 +180,13 @@ function telaVisualizarTurma({navigation}){
 									onSelect={(idx, value) => {arrComp[count] = value}}
 									textStyle={styles.txtDropdownBotao}
 									dropdownTextStyle={styles.txtDropdown}
+									renderRightComponent={() => {
+										return(
+											<View>
+												<Image style={{width: 10, height: 10, marginLeft: 2}} source={downArrow}/>
+											</View>
+										);
+									}}
 								/>
 							</DataTable.Cell>
 							<DataTable.Cell>
@@ -189,6 +197,13 @@ function telaVisualizarTurma({navigation}){
 									onSelect={(idx, value) => {arrModo[count] = value}}
 									textStyle={styles.txtDropdownBotao}
 									dropdownTextStyle={styles.txtDropdown}
+									renderRightComponent={() => {
+										return(
+											<View>
+												<Image style={{width: 10, height: 10, marginLeft: 2}} source={downArrow}/>
+											</View>
+										);
+									}}
 								/>
 							</DataTable.Cell>
 						</DataTable.Row>
