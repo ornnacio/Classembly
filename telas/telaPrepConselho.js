@@ -1,4 +1,3 @@
-import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, Button, Dimensions } from 'react-native';
@@ -7,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Card, Title, Paragraph, TextInput } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 import importarNotas from "./assets/importarNotas.png";
 import autoAvalDocente from "./assets/autoAvalDocente.png";
@@ -102,6 +102,7 @@ function telaAutoAval({navigation}){
 function telaEscreverAutoAval({ route }){
 	
 	const [txt, setTxt] = React.useState('');
+	const [showAlert, setShowAlert] = React.useState(false);
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const navigation = useNavigation();
 	
@@ -126,8 +127,13 @@ function telaEscreverAutoAval({ route }){
 			data: strData,
 		});
 		
-		alert('Auto-Avaliação salva com sucesso!');
+		setShowAlert(true);
+		
+	}
+	
+	function confirm(){
 		setTxt('');
+		setShowAlert(false);
 		navigation.navigate('AutoAval');
 	}
 	
@@ -144,6 +150,18 @@ function telaEscreverAutoAval({ route }){
 			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
 				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
 			</TouchableOpacity>
+			<AwesomeAlert
+				show={showAlert}
+				showProgress={false}
+				message="Auto-avaliação salva com sucesso!"
+				closeOnTouchOutside={false}
+				closeOnHardwareBackPress={false}
+				showCancelButton={false}
+				showConfirmButton={true}
+				confirmText="Voltar"
+				confirmButtonColor="green"
+				onConfirmPressed={() => confirm()}
+			/>
 		</View>
 	);
 }

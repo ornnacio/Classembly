@@ -1,4 +1,3 @@
-import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import React, { useState, state, Component, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';

@@ -1,4 +1,3 @@
-import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button, SafeAreaView } from 'react-native';

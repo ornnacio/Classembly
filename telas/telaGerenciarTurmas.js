@@ -1,4 +1,3 @@
-import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect, useLayoutEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Button, ScrollView, Dimensions, Picker } from 'react-native';
@@ -9,6 +8,7 @@ import 'firebase/firestore';
 import { DataTable, List, TextInput } from 'react-native-paper';
 import { ExpandableListView } from 'react-native-expandable-listview';
 import ModalDropdown from 'react-native-modal-dropdown';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import { IDContext } from "./context.js";
 
 import visualizarTurmas from "./assets/visualizarTurmas.png";
@@ -21,7 +21,8 @@ let arrNome = [], arrComp = [], arrModo = [], arrAlunos = [];
 
 function telaGerenciarTurmas({route, navigation}){
 	
-	const [alunosDados, setAlunosDados] = React.useState([]);
+	const [alunosDados1, setAlunosDados1] = React.useState([]);
+	const [alunosDados2, setAlunosDados2] = React.useState([]);
 	const [prontoDados, setProntoDados] = React.useState(false);
 	const idTurma = React.useContext(IDContext);
 	
@@ -43,13 +44,15 @@ function telaGerenciarTurmas({route, navigation}){
 				.get()
 				.then((query) => {
 					
-					const list = [];
+					const list1 = [], list2 = [];
 					
 					query.forEach((doc) => {
-						list.push(doc.data().nome);
+						list1.push(doc.data().nome);
+						list2.push(doc.data().id_aluno);
 					})
 					
-					setAlunosDados(list);
+					setAlunosDados1(list1);
+					setAlunosDados2(list2);
 					setProntoDados(true);
 				})
 			}
@@ -65,7 +68,7 @@ function telaGerenciarTurmas({route, navigation}){
 				<Image style={styles.iconBotao} source={visualizarTurmas}/>
 				<Text style={styles.txtbotaohome}>Visualizar e Editar Parecer da Turma</Text>
 			</TouchableOpacity>
-			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("ComentáriosIndividuais", {nomes: alunosDados})}>
+			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("ComentáriosIndividuais", {nomes: alunosDados1, ids: alunosDados2})}>
 				<Image style={styles.iconBotao} source={cadastrarEstatisticas} />
 				<Text style={styles.txtbotaohome}>Visualizar e Cadastrar Comentários Individuais</Text>
 			</TouchableOpacity>
@@ -77,6 +80,7 @@ function telaVisualizarTurma({navigation}){
 	
 	const [alunos, setAlunos] = React.useState([]);
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
+	const [showAlert, setShowAlert] = React.useState(false);
 	const idTurma = React.useContext(IDContext);
 	let c = -1;
 	
@@ -113,9 +117,11 @@ function telaVisualizarTurma({navigation}){
 	
 	async function press(){
 		
+		var erro = false;
+		
 		for(var i = 0; i < alunos.length; i++){
 			
-			let str = 'a' + (i + 1);
+			let str = 'a' + String((i + 1)).padStart(2, '0');
 			
 			try{
 				firebase
@@ -124,17 +130,20 @@ function telaVisualizarTurma({navigation}){
 				.doc(idTurma)
 				.collection('alunos')
 				.doc(str)
-				.set({
+				.update({
 					nome: arrNome[i],
 					comp: arrComp[i],
 					aprendizado: arrModo[i],
 				});
 			}catch(e){
 				alert(e.message);
+				erro = true;
 			}
 		}
 		
-		alert("Alterações salvas com sucesso");
+		if(!erro){
+			setShowAlert(true);
+		}
 		
 	}
 	
@@ -210,7 +219,18 @@ function telaVisualizarTurma({navigation}){
 					);
 				})}
 			</DataTable>
-
+			<AwesomeAlert
+				show={showAlert}
+				showProgress={false}
+				message="Alterações salvas com sucesso!"
+				closeOnTouchOutside={true}
+				closeOnHardwareBackPress={true}
+				showCancelButton={false}
+				showConfirmButton={true}
+				confirmText="OK"
+				confirmButtonColor="green"
+				onConfirmPressed={() => {setShowAlert(false)}}
+			/>
 			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
 				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
 			</TouchableOpacity>
@@ -252,14 +272,10 @@ function telaComentarios({ route, navigation }){
 			
 			for(const [i, v] of route.params.nomes.entries()){
 				
-				let str = 'a' + (i+1);
-				
 				firebase
 				.firestore()
-				.collection('turmas')
-				.doc(idTurma)
 				.collection('alunos')
-				.doc(str)
+				.doc(route.params.ids[i])
 				.collection('comentarios')
 				.get()
 				.then((query) => {
@@ -270,7 +286,7 @@ function telaComentarios({ route, navigation }){
 						list.push(doc.data());
 					})
 
-					const a = new aluno(v, list, str);
+					const a = new aluno(v, list, route.params.ids[i]);
 					arrAlunos.push(a);
 					
 					if((i+1) === route.params.nomes.length){
@@ -313,6 +329,8 @@ function telaEscreverComentario({ route, navigation }){
 	const [txt, setTxt] = React.useState('');
 	const [nome, setNome] = React.useState('');
 	const [prontoNome, setProntoNome] = React.useState(false);
+	const [showAlert, setShowAlert] = React.useState(false);
+	
 	let idAluno = route.params.id;
 	let lastC = route.params.lastC + 1;
 	let currentUserUID = firebase.auth().currentUser.uid;
@@ -347,8 +365,6 @@ function telaEscreverComentario({ route, navigation }){
 	
 		firebase
 		.firestore()
-		.collection('turmas')
-		.doc(idTurma)
 		.collection('alunos')
 		.doc(idAluno)
 		.collection('comentarios')
@@ -358,7 +374,12 @@ function telaEscreverComentario({ route, navigation }){
 			autor: nome,
 		});
 		
-		alert('Comentário salvo com sucesso!');
+		setShowAlert(true);
+		
+	}
+	
+	function confirm(){
+		setShowAlert(false);
 		navigation.navigate('ComentáriosIndividuais');
 	}
 	
@@ -371,6 +392,18 @@ function telaEscreverComentario({ route, navigation }){
 				numberOfLines={6}
 				onChangeText={(text) => setTxt(text)}
 				value={txt}
+			/>
+			<AwesomeAlert
+				show={showAlert}
+				showProgress={false}
+				message="Comentário salvo com sucesso!"
+				closeOnTouchOutside={false}
+				closeOnHardwareBackPress={false}
+				showCancelButton={false}
+				showConfirmButton={true}
+				confirmText="Voltar"
+				confirmButtonColor="green"
+				onConfirmPressed={() => confirm()}
 			/>
 			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => press()}>
 				<Text style={styles.txtbotaohomePuro}>Salvar Comentário</Text>

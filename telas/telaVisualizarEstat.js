@@ -1,8 +1,12 @@
-import 'react-native-gesture-handler'; //esse import tem q ta no topo
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button, Dimensions, ScrollView } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useIsFocused } from '@react-navigation/native';
+import { FAB, Card, Title, Paragraph, Button as ButtonPaper, IconButton } from 'react-native-paper';
+import firebase from 'firebase';
+import 'firebase/firestore';
+import { IDContext } from "./context.js";
 
 import alunosPrioridade from "./assets/alunosPrioridade.png";
 import estatIndividuais from "./assets/estatIndividuais.png";
@@ -31,9 +35,113 @@ function telaVisualizarEstat({navigation}){
 }
 
 function telaEstudantesPrio({navigation}){
+
+	const [alunos, setAlunos] = React.useState([]);
+	const [alunosId, setAlunosId] = React.useState([]);
+	const [alunosDisp, setAlunosDisp] = React.useState([]);
+	const [alunosDispId, setAlunosDispId] = React.useState([]);
+	const [prontoAlunos, setProntoAlunos] = React.useState(false);
+	const idTurma = React.useContext(IDContext);
+	const isFocused = useIsFocused();
+	
+	useEffect(() => {
+		
+		async function getAlunos(){
+			
+			if(!prontoAlunos){
+
+				let doc = await firebase
+				.firestore()
+				.collection('turmas')
+				.doc(idTurma)
+				.collection('alunos')
+				.get()
+				.then((query) => {
+					
+					const list = [], listId = [], listDisp = [], listDispId = [];
+					
+					query.forEach((doc) => {
+						
+						list.push(doc.data());
+						listId.push(doc.id);
+						
+						if(!doc.data().prio){
+							listDisp.push(doc.data());
+							listDispId.push(doc.id);
+						}
+					})
+					
+					setAlunos(list);
+					setAlunosId(listId);
+					setAlunosDisp(listDisp);
+					setAlunosDispId(listDispId);
+					setProntoAlunos(true);
+				})
+			}
+		}
+		
+		getAlunos();
+	
+	}, [isFocused]);
+	
 	return(
 		<View style={styles.container}>
-			<Text>placeholder 1</Text>
+			<ScrollView contentContainerStyle={styles.containerScroll}>
+				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+				{alunos.map((a, index) => {
+					
+					if(a.prio){
+						return(
+							<Card style={styles.cardPrio}>
+								<Card.Content>
+									<View style={styles.headerCard}>
+										<Title>{a.nome}</Title>
+										<View style={{flexDirection: "row"}}>
+											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => alert("macactoooo")}></IconButton>
+											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => alert("macactoooo")}></IconButton>
+										</View>
+									</View>
+									<Paragraph>{a.motivo_prio}</Paragraph>
+								</Card.Content>
+							</Card>
+						);
+					}
+				})}
+				</View>
+			</ScrollView>
+			<FAB
+				style={styles.fab}
+				icon="plus"
+				color="white"
+				onPress={() => navigation.navigate("AddEstudantePrio", {alunos: alunosDisp, ids: alunosDispId})}
+			/>
+		</View>
+	);
+}
+
+function adicionarEstudantePrio({ route, navigation }){
+	
+	let alunos = route.params.alunos, ids = route.params.ids;
+	
+	return(
+		<View style={styles.container}>
+			<ScrollView contentContainerStyle={styles.containerScroll}>
+				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+					{alunos.map((a, index) => {
+					
+						return(
+							<Card style={styles.cardPrio}>
+								<Card.Content>
+									<View style={styles.headerCard}>
+										<Title>{a.nome}</Title>
+										<IconButton icon="plus" color="#534d8a" size={25} onPress={() => alert("macactoooo")}></IconButton>
+									</View>
+								</Card.Content>
+							</Card>
+						);
+					})}
+				</View>
+			</ScrollView>
 		</View>
 	);
 }
@@ -72,6 +180,13 @@ export default function stackVisualizarEstat({navigation}){
 				}}
 			/>
 			<Stack.Screen 
+				name={"AddEstudantePrio"} 
+				component={adicionarEstudantePrio}
+				options={{
+					title: 'Adicionar aluno com prioridade de discussão'
+				}}
+			/>
+			<Stack.Screen 
 				name={"EstatIndividuais"} 
 				component={telaEstatIndividuais} 
 				options={{
@@ -98,7 +213,14 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
-  
+	
+	containerScroll: {
+		flexGrow: 1, 
+		justifyContent: 'center', 
+		alignItems: 'center',
+		width: Dimensions.get('window').width,
+	},
+	
 	iconBotao: {
 		flex: 0.2,
 		padding: 10,
@@ -143,6 +265,25 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 		marginBottom: 50,
 		width: "80%",
+	},
+	
+	fab: {
+		position: 'absolute',
+		margin: 16,
+		right: 0,
+		bottom: 0,
+		backgroundColor: '#766ec5',
+	},
+	
+	cardPrio: {
+		width: 0.95 * Dimensions.get('window').width,
+		margin: 10,
+	},
+	
+	headerCard: {
+		flexDirection: 'row', 
+		justifyContent: 'space-between', 
+		alignItems: 'center'
 	},
  
 });
