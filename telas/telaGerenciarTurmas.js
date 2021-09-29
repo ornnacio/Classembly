@@ -5,7 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
 import firebase from 'firebase';
 import 'firebase/firestore';
-import { DataTable, List, TextInput } from 'react-native-paper';
+import { DataTable, List, TextInput, FAB } from 'react-native-paper';
 import { ExpandableListView } from 'react-native-expandable-listview';
 import ModalDropdown from 'react-native-modal-dropdown';
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -231,9 +231,12 @@ function telaVisualizarTurma({navigation}){
 				confirmButtonColor="green"
 				onConfirmPressed={() => {setShowAlert(false)}}
 			/>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
-				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
-			</TouchableOpacity>
+			<FAB
+				style={styles.fab}
+				icon="content-save"
+				color="white"
+				onPress={() => press()}
+			/>
 		</View>
 	);
 }
@@ -551,6 +554,14 @@ const styles = StyleSheet.create({
 		margin: 25, 
 		borderRadius: 5, 
 		width: 0.7 * Dimensions.get('window').width, 
+	},
+	
+	fab: {
+		position: 'absolute',
+		margin: 16,
+		right: 0,
+		bottom: 0,
+		backgroundColor: '#766ec5',
 	},
  
 });

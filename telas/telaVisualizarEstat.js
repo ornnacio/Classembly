@@ -1,9 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button, Dimensions, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Button, Dimensions, ScrollView } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
-import { FAB, Card, Title, Paragraph, Button as ButtonPaper, IconButton } from 'react-native-paper';
+import { FAB, Card, Title, Paragraph, Button as ButtonPaper, IconButton, TextInput } from 'react-native-paper';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import firebase from 'firebase';
 import 'firebase/firestore';
 import { IDContext } from "./context.js";
@@ -13,6 +14,7 @@ import estatIndividuais from "./assets/estatIndividuais.png";
 import estatComparadas from "./assets/estatComparadas.png";
 
 const Stack = createStackNavigator();
+var refresh = false;
 
 function telaVisualizarEstat({navigation}){
 	
@@ -34,15 +36,17 @@ function telaVisualizarEstat({navigation}){
 	);
 }
 
-function telaEstudantesPrio({navigation}){
+function telaEstudantesPrio({route, navigation}){
 
 	const [alunos, setAlunos] = React.useState([]);
 	const [alunosId, setAlunosId] = React.useState([]);
 	const [alunosDisp, setAlunosDisp] = React.useState([]);
 	const [alunosDispId, setAlunosDispId] = React.useState([]);
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
-	const idTurma = React.useContext(IDContext);
+	const [showAlert, setShowAlert] = React.useState(false);
+	const [refreshDummy, setRefreshDummy] = React.useState(0);
 	const isFocused = useIsFocused();
+	const idTurma = React.useContext(IDContext);
 	
 	useEffect(() => {
 		
@@ -55,8 +59,7 @@ function telaEstudantesPrio({navigation}){
 				.collection('turmas')
 				.doc(idTurma)
 				.collection('alunos')
-				.get()
-				.then((query) => {
+				.onSnapshot((query) => {
 					
 					const list = [], listId = [], listDisp = [], listDispId = [];
 					
@@ -82,7 +85,34 @@ function telaEstudantesPrio({navigation}){
 		
 		getAlunos();
 	
-	}, [isFocused]);
+	}, [refreshDummy, isFocused]);
+	
+	function deletar(id){
+		
+		let erro = false;
+		
+		try{
+			firebase
+			.firestore()
+			.collection('turmas')
+			.doc(idTurma)
+			.collection('alunos')
+			.doc(id)
+			.update({
+				prio: false,
+				motivo_prio: null
+			});
+		}catch(e){
+			alert(e.message);
+			erro = true;
+		}
+		
+		!erro ? setShowAlert(true) : setShowAlert(false);
+	}
+	
+	function confirm(){
+		setShowAlert(false);
+	}
 	
 	return(
 		<View style={styles.container}>
@@ -97,8 +127,8 @@ function telaEstudantesPrio({navigation}){
 									<View style={styles.headerCard}>
 										<Title>{a.nome}</Title>
 										<View style={{flexDirection: "row"}}>
-											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => alert("macactoooo")}></IconButton>
-											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => alert("macactoooo")}></IconButton>
+											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio })}></IconButton>
+											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deletar(alunosId[index])}></IconButton>
 										</View>
 									</View>
 									<Paragraph>{a.motivo_prio}</Paragraph>
@@ -114,6 +144,18 @@ function telaEstudantesPrio({navigation}){
 				icon="plus"
 				color="white"
 				onPress={() => navigation.navigate("AddEstudantePrio", {alunos: alunosDisp, ids: alunosDispId})}
+			/>
+			<AwesomeAlert
+				show={showAlert}
+				showProgress={false}
+				message="Aluno removido com sucesso!"
+				closeOnTouchOutside={false}
+				closeOnHardwareBackPress={false}
+				showCancelButton={false}
+				showConfirmButton={true}
+				confirmText="Voltar"
+				confirmButtonColor="green"
+				onConfirmPressed={() => confirm()}
 			/>
 		</View>
 	);
@@ -134,7 +176,7 @@ function adicionarEstudantePrio({ route, navigation }){
 								<Card.Content>
 									<View style={styles.headerCard}>
 										<Title>{a.nome}</Title>
-										<IconButton icon="plus" color="#534d8a" size={25} onPress={() => alert("macactoooo")}></IconButton>
+										<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", {id: ids[index], txtOriginal: ''})}></IconButton>
 									</View>
 								</Card.Content>
 							</Card>
@@ -142,6 +184,71 @@ function adicionarEstudantePrio({ route, navigation }){
 					})}
 				</View>
 			</ScrollView>
+		</View>
+	);
+}
+
+function escreverMotivo({ route, navigation }){
+	
+	const [txt, setTxt] = React.useState(route.params.txtOriginal);
+	const [showAlert, setShowAlert] = React.useState(false);
+	const idTurma = React.useContext(IDContext);
+	
+	function press(){
+		
+		let erro = false;
+		
+		try{
+			firebase
+			.firestore()
+			.collection('turmas')
+			.doc(idTurma)
+			.collection('alunos')
+			.doc(route.params.id)
+			.update({
+				prio: true,
+				motivo_prio: txt
+			});
+		}catch(e){
+			alert(e.message);
+			erro = true;
+		}
+		
+		!erro ? setShowAlert(true) : setShowAlert(false);
+	}
+	
+	function confirm(){
+		
+		setTxt('');
+		setShowAlert(false);
+		navigation.navigate('EstudantesPrio');
+	}
+	
+	return(
+		<View style={styles.container}>
+			<TextInput
+				style={styles.inputBox}
+				underlineColor='#766ec5'
+				multiline={true}
+				numberOfLines={6}
+				onChangeText={(text) => setTxt(text)}
+				value={txt}
+			/>
+			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
+				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
+			</TouchableOpacity>
+			<AwesomeAlert
+				show={showAlert}
+				showProgress={false}
+				message="Motivo salvo com sucesso!"
+				closeOnTouchOutside={false}
+				closeOnHardwareBackPress={false}
+				showCancelButton={false}
+				showConfirmButton={true}
+				confirmText="Voltar"
+				confirmButtonColor="green"
+				onConfirmPressed={() => confirm()}
+			/>
 		</View>
 	);
 }
@@ -184,6 +291,13 @@ export default function stackVisualizarEstat({navigation}){
 				component={adicionarEstudantePrio}
 				options={{
 					title: 'Adicionar aluno com prioridade de discussão'
+				}}
+			/>
+			<Stack.Screen 
+				name={"EscreverMotivo"} 
+				component={escreverMotivo}
+				options={{
+					title: 'Escrever motivo da prioridade'
 				}}
 			/>
 			<Stack.Screen 
@@ -266,7 +380,7 @@ const styles = StyleSheet.create({
 		marginBottom: 50,
 		width: "80%",
 	},
-	
+
 	fab: {
 		position: 'absolute',
 		margin: 16,
@@ -284,6 +398,12 @@ const styles = StyleSheet.create({
 		flexDirection: 'row', 
 		justifyContent: 'space-between', 
 		alignItems: 'center'
+	},
+	
+	inputBox: { 
+		margin: 25, 
+		borderRadius: 5, 
+		width: 0.7 * Dimensions.get('window').width, 
 	},
  
 });

@@ -3,10 +3,12 @@ import React, { useState, state, Component, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, Button, Dimensions } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
-import { Card, Title, Paragraph, TextInput } from 'react-native-paper';
+import { Card, Title, Paragraph, TextInput, FAB } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
 import AwesomeAlert from 'react-native-awesome-alerts';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 
 import importarNotas from "./assets/importarNotas.png";
 import autoAvalDocente from "./assets/autoAvalDocente.png";
@@ -31,9 +33,51 @@ function telaPrepConselho({navigation}){
 
 function telaImportarNotas({navigation}){
 	
+	// const [txt, setTxt] = React.useState('ainda não');
+	
+	// apikey: 18ede0a6-a08d-4a85-8cdc-81dfa23c1003
+	
+	// async function createFile(a){
+		// let response = await fetch(a);
+		// let data = await response.blob();
+		// let file = new File([data], "test.xlsx", {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+		
+		// return file;
+	// }
+	
+	// async function press(){
+		
+		// let doc = DocumentPicker.getDocumentAsync({type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}).then((p) => {
+			
+			// createFile(p.uri).then((f) => {
+				// var data = new FormData();
+				// data.append("inputFile", f, "file");
+				// var xhr = new XMLHttpRequest();
+				// xhr.addEventListener("readystatechange", function() {
+					// if(this.readyState === 4) {
+						// setTxt(this.responseText);
+					// }
+				// });
+				// xhr.open("POST", "https://api.cloudmersive.com/convert/xlsx/to/json");
+				// xhr.setRequestHeader("Content-Type", "multipart/form-data");
+				// xhr.setRequestHeader("Apikey", "18ede0a6-a08d-4a85-8cdc-81dfa23c1003");
+
+				// xhr.send(data);
+			// });
+		// });
+	// }
+	
 	return(
 		<View style={styles.container}>
-			<Text>placeholder 1</Text>
+			{//tirar isso quando funcionar
+				false && <>
+				<TouchableOpacity style={styles.butaoHomePuro} onPress={() => press()}>
+					<Text>asdasd</Text>
+				</TouchableOpacity>
+				<Text>{txt}</Text>
+				</>
+			}
+			<Text>placeholder</Text>
 		</View>
 	);
 }
@@ -90,11 +134,14 @@ function telaAutoAval({navigation}){
 							</Card>
 						)
 					})}
-					<TouchableOpacity style={styles.butaoHomePuro} onPress={() => navigation.navigate("EscreverAutoAval", {lastAval})}>
-						<Text style={styles.txtbotaohomePuro}>Escrever Auto-Avaliação</Text>
-					</TouchableOpacity>
 				</View>
 			</ScrollView>
+			<FAB
+				style={styles.fab}
+				icon="plus"
+				color="white"
+				onPress={() => navigation.navigate("EscreverAutoAval", {lastAval})}
+			/>
 		</View>
 	);
 }
@@ -269,6 +316,14 @@ const styles = StyleSheet.create({
 		margin: 25, 
 		borderRadius: 5, 
 		width: 0.7 * Dimensions.get('window').width, 
+	},
+	
+	fab: {
+		position: 'absolute',
+		margin: 16,
+		right: 0,
+		bottom: 0,
+		backgroundColor: '#766ec5',
 	},
  
 });
