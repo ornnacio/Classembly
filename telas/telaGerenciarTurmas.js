@@ -1,12 +1,10 @@
-import { StatusBar } from 'expo-status-bar';
-import React, { useState, state, Component, useEffect, useLayoutEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Button, ScrollView, Dimensions, Picker } from 'react-native';
+import React, { useState, state, Component, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
 import firebase from 'firebase';
 import 'firebase/firestore';
 import { DataTable, List, TextInput, FAB } from 'react-native-paper';
-import { ExpandableListView } from 'react-native-expandable-listview';
 import ModalDropdown from 'react-native-modal-dropdown';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import { IDContext } from "./context.js";
@@ -155,7 +153,10 @@ function telaVisualizarTurma({navigation}){
 					<DataTable.Title>Comportamento</DataTable.Title>
 					<DataTable.Title>Modo de aprendizado</DataTable.Title>
 				</DataTable.Row>
-				{alunos.map((a, index) => {
+				{!prontoAlunos &&
+					<ActivityIndicator size='large' color="#766ec5" style={{marginVertical: 10}}/>
+				}
+				{prontoAlunos && alunos.map((a, index) => {
 					
 					let count = c + 1;
 					c = c + 1;
@@ -252,10 +253,13 @@ class aluno {
 	printComentarios(){
 		let s = '';
 		
-		this.comentarios.forEach((c) => {
-			s = s + 'Comentário de ' + c.autor + ': ' + c.txt + '\n';
-		})
-		
+		if(this.comentarios.length != 0){
+			this.comentarios.forEach((c) => {
+				s = s + 'Comentário de ' + c.autor + ': ' + c.txt + '\n';
+			})
+		}else{
+			s = 'Nenhum comentário encontrado';
+		}
 		return s;
 	}
 }
@@ -263,6 +267,7 @@ class aluno {
 function telaComentarios({ route, navigation }){
 	
 	const [alunos, setAlunos] = React.useState([]);
+	const [prontoAlunos, setProntoAlunos] = React.useState(false);
 	const idTurma = React.useContext(IDContext);
 	let width = 0.9 * Dimensions.get('window').width;
 	const isFocused = useIsFocused();
@@ -294,6 +299,7 @@ function telaComentarios({ route, navigation }){
 					
 					if((i+1) === route.params.nomes.length){
 						setAlunos(arrAlunos);
+						setProntoAlunos(true);
 					}
 				})
 				
@@ -308,7 +314,10 @@ function telaComentarios({ route, navigation }){
 		<View style={styles.container}>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
 				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-					{alunos.map((a, index) => {
+					{!prontoAlunos &&
+						<ActivityIndicator size='large' color="#766ec5" />
+					}
+					{prontoAlunos && alunos.map((a, index) => {
 					
 						return(
 							<List.Section style={styles.listSection} key={index}>

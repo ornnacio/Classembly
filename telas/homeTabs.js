@@ -1,6 +1,5 @@
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -133,6 +132,7 @@ function TelaSelectTurma(){
 	});
 	
 	function press(id){
+		
 		navigation.navigate("HomeDrawer", {
 			screen: 'HomeTabs', 
 			params: { id: id, update: true }
@@ -147,13 +147,21 @@ function TelaSelectTurma(){
 	return(
 		<View style={styles.container}>
 			<Text style={styles.txtbotao}>Selecione uma turma</Text>
-			{turmas.map((t, index) => {
-				return(
-					<TouchableOpacity key={index} style={styles.butaoHome} onPress={() => press(t)}>
-						<Text style={styles.txtbotaohomePuro}>{t.toUpperCase()}</Text>
-					</TouchableOpacity>
-				);
-			})}
+			<View style={styles.containerTurmas}>
+				{!prontoTurmas && 
+					<ActivityIndicator size='large' color="#766ec5" style={{marginVertical: 40}}/>
+				}
+				{prontoTurmas && turmas.map((t, index) => {
+					return(
+						<TouchableOpacity key={index} style={styles.butaoHome} onPress={() => press(t)}>
+							<Text style={styles.txtbotaohomePuro}>{t.toUpperCase()}</Text>
+						</TouchableOpacity>
+					);
+				})}
+				{(prontoTurmas && (turmas.length == 0)) && 
+					<Text style={styles.txtbotao}>Nenhuma turma encontrada</Text>
+				}
+			</View>
 			<TouchableOpacity style={styles.butaoSair} onPress={() => sair()}>
 				<Text style={styles.txtbotaohomePuro}>Sair</Text>
 			</TouchableOpacity>
@@ -226,6 +234,13 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
+
+	containerTurmas: {
+		marginVertical: 20, 
+		width: Dimensions.get('window').width,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
 	
 	iconTab: {
 		height: 30,
@@ -250,7 +265,7 @@ const styles = StyleSheet.create({
 		backgroundColor: '#766ec5',
 		padding: 5,
 		borderRadius: 5,
-		marginBottom: 50,
+		marginVertical: 15,
 		width: "80%",
 	},
 	
@@ -258,7 +273,6 @@ const styles = StyleSheet.create({
 		backgroundColor: '#766ec5',
 		padding: 5,
 		borderRadius: 5,
-		marginBottom: 50,
 	},
 
 	butao: {

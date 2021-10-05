@@ -1,9 +1,8 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Button, Dimensions, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
-import { FAB, Card, Title, Paragraph, Button as ButtonPaper, IconButton, TextInput } from 'react-native-paper';
+import { FAB, Card, Title, Paragraph, IconButton, TextInput } from 'react-native-paper';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import firebase from 'firebase';
 import 'firebase/firestore';
@@ -44,7 +43,7 @@ function telaEstudantesPrio({route, navigation}){
 	const [alunosDispId, setAlunosDispId] = React.useState([]);
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
 	const [showAlert, setShowAlert] = React.useState(false);
-	const [refreshDummy, setRefreshDummy] = React.useState(0);
+	let vazio = true;
 	const isFocused = useIsFocused();
 	const idTurma = React.useContext(IDContext);
 	
@@ -85,7 +84,7 @@ function telaEstudantesPrio({route, navigation}){
 		
 		getAlunos();
 	
-	}, [refreshDummy, isFocused]);
+	}, [isFocused]);
 	
 	function deletar(id){
 		
@@ -118,25 +117,34 @@ function telaEstudantesPrio({route, navigation}){
 		<View style={styles.container}>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
 				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-				{alunos.map((a, index) => {
-					
-					if(a.prio){
-						return(
-							<Card style={styles.cardPrio}>
-								<Card.Content>
-									<View style={styles.headerCard}>
-										<Title>{a.nome}</Title>
-										<View style={{flexDirection: "row"}}>
-											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio })}></IconButton>
-											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deletar(alunosId[index])}></IconButton>
-										</View>
-									</View>
-									<Paragraph>{a.motivo_prio}</Paragraph>
-								</Card.Content>
-							</Card>
-						);
+					{!prontoAlunos &&
+						<ActivityIndicator size='large' color="#766ec5" />
 					}
-				})}
+					{prontoAlunos && alunos.map((a, index) => {
+						
+						if(a.prio){
+
+							vazio = false;
+
+							return(
+								<Card style={styles.cardPrio} key={index}>
+									<Card.Content>
+										<View style={styles.headerCard}>
+											<Title>{a.nome}</Title>
+											<View style={{flexDirection: "row"}}>
+												<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio })}></IconButton>
+												<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deletar(alunosId[index])}></IconButton>
+											</View>
+										</View>
+										<Paragraph>{a.motivo_prio}</Paragraph>
+									</Card.Content>
+								</Card>
+							);
+						}
+					})}
+					{(prontoAlunos && vazio) &&
+						<Text style={styles.txtAviso}>Nenhum aluno com prioridade de discussão</Text>
+					}
 				</View>
 			</ScrollView>
 			<FAB
@@ -172,7 +180,7 @@ function adicionarEstudantePrio({ route, navigation }){
 					{alunos.map((a, index) => {
 					
 						return(
-							<Card style={styles.cardPrio}>
+							<Card style={styles.cardPrio} key={index}>
 								<Card.Content>
 									<View style={styles.headerCard}>
 										<Title>{a.nome}</Title>
@@ -182,6 +190,9 @@ function adicionarEstudantePrio({ route, navigation }){
 							</Card>
 						);
 					})}
+					{(alunos.length == 0) &&
+						<Text style={styles.txtAviso}>Todos os alunos já foram adicionados</Text>
+					}
 				</View>
 			</ScrollView>
 		</View>
@@ -350,6 +361,11 @@ const styles = StyleSheet.create({
 		resizeMode: 'contain',
 	},
   
+	txtAviso:{
+		fontSize: 18,
+		color: '#1f1f1f'
+	},
+
 	txtbotaohome: {
 		flex: 0.8,
 		fontSize: 20,

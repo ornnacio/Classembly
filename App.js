@@ -12,7 +12,6 @@ import telaLogin from "./telas/telaLogin.js";
 import telaCadastro from "./telas/telaCadastro.js";
 import telaLoading from "./telas/telaLoading.js";
 import homeDrawer from "./telas/homeTabs.js";
-import logo from "./assets/logo.png";
 
 //funções e consts 
 const Stack = createStackNavigator();

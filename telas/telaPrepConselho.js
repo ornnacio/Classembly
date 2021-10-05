@@ -1,6 +1,5 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, Button, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import { Card, Title, Paragraph, TextInput, FAB } from 'react-native-paper';
@@ -121,7 +120,10 @@ function telaAutoAval({navigation}){
 		<View style={styles.container}>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
 				<View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-					{avalArr.map((a, index) => {
+					{!prontoAval &&
+						<ActivityIndicator size='large' color="#766ec5" />
+					}
+					{prontoAval && avalArr.map((a, index) => {
 						
 						lastAval += 1;
 						
