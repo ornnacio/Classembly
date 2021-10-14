@@ -30,41 +30,44 @@ function telaPrepConselho({navigation}){
 	);
 }
 
-function telaImportarNotas({navigation}){
-	
-	// const [txt, setTxt] = React.useState('ainda não');
-	
-	// apikey: 18ede0a6-a08d-4a85-8cdc-81dfa23c1003
-	
-	// async function createFile(a){
-		// let response = await fetch(a);
-		// let data = await response.blob();
-		// let file = new File([data], "test.xlsx", {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-		
-		// return file;
-	// }
-	
-	// async function press(){
-		
-		// let doc = DocumentPicker.getDocumentAsync({type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}).then((p) => {
-			
-			// createFile(p.uri).then((f) => {
-				// var data = new FormData();
-				// data.append("inputFile", f, "file");
-				// var xhr = new XMLHttpRequest();
-				// xhr.addEventListener("readystatechange", function() {
-					// if(this.readyState === 4) {
-						// setTxt(this.responseText);
-					// }
-				// });
-				// xhr.open("POST", "https://api.cloudmersive.com/convert/xlsx/to/json");
-				// xhr.setRequestHeader("Content-Type", "multipart/form-data");
-				// xhr.setRequestHeader("Apikey", "18ede0a6-a08d-4a85-8cdc-81dfa23c1003");
+function telaImportarNotas({ navigation }) {
 
-				// xhr.send(data);
-			// });
-		// });
-	// }
+	//let csvToJson = require('convert-csv-to-json');
+
+//let fileInputName = ; 
+//let fileOutputName = 'myOutputFile.json';
+
+//csvToJson.generateJsonFileFromCsv(fileInputName,fileOutputName);
+
+	async function openLink() {
+		WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});	
+	}
+
+	async function pickCSV() {
+
+		let doc = DocumentPicker.getDocumentAsync({
+			copyToCacheDirectory: false,
+		}).then(async p => {
+			
+			
+			const payloadJson = await FileSystem.readAsStringAsync(p.uri);
+			console.log((payloadJson));
+			//csvToJson.generateJsonFileFromCsv(p.,"wa")
+		});
+	}
+
+	return (
+		<View style={styles.container}>
+			<Text>Para atualizar as notas desta turma, clique no botão abaixo para abrir o conversor, selecione a planilha de notas e baixe o arquivo em formato CSV. Após isso, clique no segundo botão e selecione o arquivo CSV do seu dispositivo.
+			</Text> 
+			<TouchableOpacity onPress={() => openLink()} style={styles.butaoHomePuro}>
+				<Text style={styles.txtbotaohomePuro}>Abrir Conversor</Text>
+			</TouchableOpacity>
+			<TouchableOpacity onPress={() => pickCSV()} style={styles.butaoHomePuro}>
+				<Text style={styles.txtbotaohomePuro}>Selecionar planilha</Text>
+			</TouchableOpacity>
+		</View>
+	);
 	
 	return(
 		<View style={styles.container}>
