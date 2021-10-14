@@ -40,8 +40,11 @@ function telaImportarNotas({ navigation }) {
 
 	async function pickCSV() {
 
-		let doc = DocumentPicker.getDocumentAsync().then(async p => {
-			//pepino
+		let doc = DocumentPicker.getDocumentAsync({
+			copyToCacheDirectory: false,
+		}).then(async p => {
+			const payloadJson = await FileSystem.readAsStringAsync(p.uri);
+			console.log((payloadJson));
 		});
 	}
 
@@ -57,6 +60,8 @@ function telaImportarNotas({ navigation }) {
 			</TouchableOpacity>
 		</View>
 	);
+	
+	
 }
 
 function telaAutoAval({ navigation }) {
