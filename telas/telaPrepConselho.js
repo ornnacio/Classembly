@@ -9,7 +9,6 @@ import AwesomeAlert from 'react-native-awesome-alerts';
 import * as DocumentPicker from 'expo-document-picker';
 import * as WebBrowser from 'expo-web-browser';
 import * as FileSystem from 'expo-file-system';
-import CSVReader from 'react-csv-reader';
 
 import importarNotas from "./assets/importarNotas.png";
 import autoAvalDocente from "./assets/autoAvalDocente.png";
