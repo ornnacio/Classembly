@@ -7,6 +7,7 @@ import AwesomeAlert from 'react-native-awesome-alerts';
 import firebase from 'firebase';
 import 'firebase/firestore';
 import { IDContext } from "./context.js";
+import PieChart from 'react-native-pie-chart';
 
 import alunosPrioridade from "./assets/alunosPrioridade.png";
 import estatIndividuais from "./assets/estatIndividuais.png";
@@ -15,9 +16,9 @@ import estatComparadas from "./assets/estatComparadas.png";
 const Stack = createStackNavigator();
 var refresh = false;
 
-function telaVisualizarEstat({navigation}){
-	
-	return(
+function telaVisualizarEstat({ navigation }) {
+
+	return (
 		<View style={styles.container}>
 			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("EstudantesPrio")}>
 				<Image style={styles.iconBotao} source={alunosPrioridade} />
@@ -35,7 +36,7 @@ function telaVisualizarEstat({navigation}){
 	);
 }
 
-function telaEstudantesPrio({route, navigation}){
+function telaEstudantesPrio({ route, navigation }) {
 
 	const [alunos, setAlunos] = React.useState([]);
 	const [alunosId, setAlunosId] = React.useState([]);
@@ -46,74 +47,74 @@ function telaEstudantesPrio({route, navigation}){
 	let vazio = true;
 	const isFocused = useIsFocused();
 	const idTurma = React.useContext(IDContext);
-	
+
 	useEffect(() => {
-		
-		async function getAlunos(){
-			
-			if(!prontoAlunos){
+
+		async function getAlunos() {
+
+			if (!prontoAlunos) {
 
 				let doc = await firebase
+					.firestore()
+					.collection('turmas')
+					.doc(idTurma)
+					.collection('alunos')
+					.onSnapshot((query) => {
+
+						const list = [], listId = [], listDisp = [], listDispId = [];
+
+						query.forEach((doc) => {
+
+							list.push(doc.data());
+							listId.push(doc.id);
+
+							if (!doc.data().prio) {
+								listDisp.push(doc.data());
+								listDispId.push(doc.id);
+							}
+						})
+
+						setAlunos(list);
+						setAlunosId(listId);
+						setAlunosDisp(listDisp);
+						setAlunosDispId(listDispId);
+						setProntoAlunos(true);
+					})
+			}
+		}
+
+		getAlunos();
+
+	}, [isFocused]);
+
+	function deletar(id) {
+
+		let erro = false;
+
+		try {
+			firebase
 				.firestore()
 				.collection('turmas')
 				.doc(idTurma)
 				.collection('alunos')
-				.onSnapshot((query) => {
-					
-					const list = [], listId = [], listDisp = [], listDispId = [];
-					
-					query.forEach((doc) => {
-						
-						list.push(doc.data());
-						listId.push(doc.id);
-						
-						if(!doc.data().prio){
-							listDisp.push(doc.data());
-							listDispId.push(doc.id);
-						}
-					})
-					
-					setAlunos(list);
-					setAlunosId(listId);
-					setAlunosDisp(listDisp);
-					setAlunosDispId(listDispId);
-					setProntoAlunos(true);
-				})
-			}
-		}
-		
-		getAlunos();
-	
-	}, [isFocused]);
-	
-	function deletar(id){
-		
-		let erro = false;
-		
-		try{
-			firebase
-			.firestore()
-			.collection('turmas')
-			.doc(idTurma)
-			.collection('alunos')
-			.doc(id)
-			.update({
-				prio: false,
-				motivo_prio: null
-			});
-		}catch(e){
+				.doc(id)
+				.update({
+					prio: false,
+					motivo_prio: null
+				});
+		} catch (e) {
 			alert(e.message);
 			erro = true;
 		}
-		
+
 		!erro ? setShowAlert(true) : setShowAlert(false);
 	}
-	
-	function confirm(){
+
+	function confirm() {
 		setShowAlert(false);
 	}
-	
-	return(
+
+	return (
 		<View style={styles.container}>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
 				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -121,17 +122,17 @@ function telaEstudantesPrio({route, navigation}){
 						<ActivityIndicator size='large' color="#766ec5" />
 					}
 					{prontoAlunos && alunos.map((a, index) => {
-						
-						if(a.prio){
+
+						if (a.prio) {
 
 							vazio = false;
 
-							return(
+							return (
 								<Card style={styles.cardPrio} key={index}>
 									<Card.Content>
 										<View style={styles.headerCard}>
 											<Title>{a.nome}</Title>
-											<View style={{flexDirection: "row"}}>
+											<View style={{ flexDirection: "row" }}>
 												<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio })}></IconButton>
 												<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deletar(alunosId[index])}></IconButton>
 											</View>
@@ -151,7 +152,7 @@ function telaEstudantesPrio({route, navigation}){
 				style={styles.fab}
 				icon="plus"
 				color="white"
-				onPress={() => navigation.navigate("AddEstudantePrio", {alunos: alunosDisp, ids: alunosDispId})}
+				onPress={() => navigation.navigate("AddEstudantePrio", { alunos: alunosDisp, ids: alunosDispId })}
 			/>
 			<AwesomeAlert
 				show={showAlert}
@@ -169,22 +170,22 @@ function telaEstudantesPrio({route, navigation}){
 	);
 }
 
-function adicionarEstudantePrio({ route, navigation }){
-	
+function adicionarEstudantePrio({ route, navigation }) {
+
 	let alunos = route.params.alunos, ids = route.params.ids;
-	
-	return(
+
+	return (
 		<View style={styles.container}>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
 				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 					{alunos.map((a, index) => {
-					
-						return(
+
+						return (
 							<Card style={styles.cardPrio} key={index}>
 								<Card.Content>
 									<View style={styles.headerCard}>
 										<Title>{a.nome}</Title>
-										<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", {id: ids[index], txtOriginal: ''})}></IconButton>
+										<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: ids[index], txtOriginal: '' })}></IconButton>
 									</View>
 								</Card.Content>
 							</Card>
@@ -199,43 +200,43 @@ function adicionarEstudantePrio({ route, navigation }){
 	);
 }
 
-function escreverMotivo({ route, navigation }){
-	
+function escreverMotivo({ route, navigation }) {
+
 	const [txt, setTxt] = React.useState(route.params.txtOriginal);
 	const [showAlert, setShowAlert] = React.useState(false);
 	const idTurma = React.useContext(IDContext);
-	
-	function press(){
-		
+
+	function press() {
+
 		let erro = false;
-		
-		try{
+
+		try {
 			firebase
-			.firestore()
-			.collection('turmas')
-			.doc(idTurma)
-			.collection('alunos')
-			.doc(route.params.id)
-			.update({
-				prio: true,
-				motivo_prio: txt
-			});
-		}catch(e){
+				.firestore()
+				.collection('turmas')
+				.doc(idTurma)
+				.collection('alunos')
+				.doc(route.params.id)
+				.update({
+					prio: true,
+					motivo_prio: txt
+				});
+		} catch (e) {
 			alert(e.message);
 			erro = true;
 		}
-		
+
 		!erro ? setShowAlert(true) : setShowAlert(false);
 	}
-	
-	function confirm(){
-		
+
+	function confirm() {
+
 		setTxt('');
 		setShowAlert(false);
 		navigation.navigate('EstudantesPrio');
 	}
-	
-	return(
+
+	return (
 		<View style={styles.container}>
 			<TextInput
 				style={styles.inputBox}
@@ -264,63 +265,124 @@ function escreverMotivo({ route, navigation }){
 	);
 }
 
-function telaEstatIndividuais({navigation}){
-	return(
+function telaEstatIndividuais({ navigation }) {
+
+	const [prontoAlunos, setProntoAlunos] = React.useState(false);
+	const [alunos, setAlunos] = React.useState([]);
+	const [data, setData] = React.useState([1, 1, 1]);
+	const idTurma = React.useContext(IDContext);
+
+	useEffect(() => {
+
+		async function getAlunos() {
+
+			if (!prontoAlunos) {
+
+				let doc = await firebase
+					.firestore()
+					.collection('turmas')
+					.doc(idTurma)
+					.collection('alunos')
+					.onSnapshot((query) => {
+
+						const list = [], contadores = [0, 0, 0];
+
+						query.forEach((doc) => {
+							list.push(doc.data());
+
+							if(doc.data().aprendizado == 'Auditivo'){
+								contadores[0] += 1;
+							}else if(doc.data().aprendizado == 'Cinestésico'){
+								contadores[1] += 1;
+							}else{
+								contadores[2] += 1;
+							}
+						})
+
+						setAlunos(list);
+						setData(contadores);
+						setProntoAlunos(true);
+					});
+			}
+		}
+
+		getAlunos();
+	});
+
+	const sliceColor = ['#918bd1','#ada8dc','#c8c5e8'];
+
+	return (
 		<View style={styles.container}>
-			<Text>placeholder 2</Text>
+			<View>
+				{prontoAlunos && <>
+					<PieChart
+						widthAndHeight={0.8 * Dimensions.get('window').width}
+						series={data}
+						sliceColor={sliceColor}
+					/>
+					<View style={{justifyContent: 'center', textAlign: 'center', alignItems: 'center'}}>
+						<Text>Auditivo: <Text style={{color: '#918bd1'}}>{data[0] + ' ' + (data[0] > 1 ? 'alunos' : 'aluno')}</Text></Text>
+						<Text>Cinestésico: <Text style={{color: '#ada8dc'}}>{data[1] + ' ' + (data[1] > 1 ? 'alunos' : 'aluno')}</Text></Text>
+						<Text>Visual: <Text style={{color: '#c8c5e8'}}>{data[1] + ' ' + (data[1] > 1 ? 'alunos' : 'aluno')}</Text></Text>
+					</View>
+				</>}
+				{!prontoAlunos && <>
+					<ActivityIndicator size='large' color="#766ec5"/>
+				</>}
+			</View>
 		</View>
 	);
 }
 
-function telaEstatComparadas({navigation}){
-	return(
+function telaEstatComparadas({ navigation }) {
+	return (
 		<View style={styles.container}>
 			<Text>placeholder 3</Text>
 		</View>
 	);
 }
 
-export default function stackVisualizarEstat({navigation}){
-	return(
-		<Stack.Navigator screenOptions={{headerStyle: {backgroundColor: '#766ec5'}, headerTintColor: '#f4f9fc'}} initialRouteName="MainVisualizarEstat">
-			<Stack.Screen 
-				name={"MainVisualizarEstat"} 
-				component={telaVisualizarEstat} 
+export default function stackVisualizarEstat({ navigation }) {
+	return (
+		<Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#766ec5' }, headerTintColor: '#f4f9fc' }} initialRouteName="MainVisualizarEstat">
+			<Stack.Screen
+				name={"MainVisualizarEstat"}
+				component={telaVisualizarEstat}
 				options={{
 					headerShown: false
 				}}
 			/>
-			<Stack.Screen 
-				name={"EstudantesPrio"} 
+			<Stack.Screen
+				name={"EstudantesPrio"}
 				component={telaEstudantesPrio}
 				options={{
 					title: 'Estudantes com prioridade de discussão'
 				}}
 			/>
-			<Stack.Screen 
-				name={"AddEstudantePrio"} 
+			<Stack.Screen
+				name={"AddEstudantePrio"}
 				component={adicionarEstudantePrio}
 				options={{
 					title: 'Adicionar aluno com prioridade de discussão'
 				}}
 			/>
-			<Stack.Screen 
-				name={"EscreverMotivo"} 
+			<Stack.Screen
+				name={"EscreverMotivo"}
 				component={escreverMotivo}
 				options={{
 					title: 'Escrever motivo da prioridade'
 				}}
 			/>
-			<Stack.Screen 
-				name={"EstatIndividuais"} 
-				component={telaEstatIndividuais} 
+			<Stack.Screen
+				name={"EstatIndividuais"}
+				component={telaEstatIndividuais}
 				options={{
 					title: 'Visualizar estatísticas individuais'
 				}}
 			/>
-			<Stack.Screen 
-				name={"EstatComparadas"} 
-				component={telaEstatComparadas} 
+			<Stack.Screen
+				name={"EstatComparadas"}
+				component={telaEstatComparadas}
 				options={{
 					title: 'Visualizar estatísticas comparadas'
 				}}
@@ -330,7 +392,7 @@ export default function stackVisualizarEstat({navigation}){
 }
 
 const styles = StyleSheet.create({
-	
+
 	container: {
 		flex: 1,
 		flexDirection: 'column',
@@ -338,14 +400,14 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
-	
+
 	containerScroll: {
-		flexGrow: 1, 
-		justifyContent: 'center', 
+		flexGrow: 1,
+		justifyContent: 'center',
 		alignItems: 'center',
 		width: Dimensions.get('window').width,
 	},
-	
+
 	iconBotao: {
 		flex: 0.2,
 		padding: 10,
@@ -354,14 +416,14 @@ const styles = StyleSheet.create({
 		width: 75,
 		resizeMode: 'contain',
 	},
-	
+
 	iconTab: {
 		height: 30,
 		width: 30,
 		resizeMode: 'contain',
 	},
-  
-	txtAviso:{
+
+	txtAviso: {
 		fontSize: 18,
 		color: '#1f1f1f'
 	},
@@ -372,13 +434,13 @@ const styles = StyleSheet.create({
 		color: '#f4f9fc',
 		textAlign: 'center',
 	},
-	
+
 	txtbotaohomePuro: {
 		fontSize: 20,
 		color: '#f4f9fc',
 		textAlign: 'center',
 	},
-  
+
 	butaoHome: {
 		backgroundColor: '#766ec5',
 		flexDirection: 'row',
@@ -388,7 +450,7 @@ const styles = StyleSheet.create({
 		marginBottom: 50,
 		width: "80%",
 	},
-	
+
 	butaoHomePuro: {
 		backgroundColor: '#766ec5',
 		padding: 5,
@@ -404,22 +466,22 @@ const styles = StyleSheet.create({
 		bottom: 0,
 		backgroundColor: '#766ec5',
 	},
-	
+
 	cardPrio: {
 		width: 0.95 * Dimensions.get('window').width,
 		margin: 10,
 	},
-	
+
 	headerCard: {
-		flexDirection: 'row', 
-		justifyContent: 'space-between', 
+		flexDirection: 'row',
+		justifyContent: 'space-between',
 		alignItems: 'center'
 	},
-	
-	inputBox: { 
-		margin: 25, 
-		borderRadius: 5, 
-		width: 0.7 * Dimensions.get('window').width, 
+
+	inputBox: {
+		margin: 25,
+		borderRadius: 5,
+		width: 0.7 * Dimensions.get('window').width,
 	},
- 
+
 });

@@ -1,9 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button, SafeAreaView } from 'react-native';
-import firebase from 'firebase';
+import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity} from 'react-native';
 import "firebase/firestore";
-import { db } from "../firebase/firebase.js";
 import logo from "./assets/logo.png";
 import { cadastro } from "../firebase/firebaseMethods.js";
 

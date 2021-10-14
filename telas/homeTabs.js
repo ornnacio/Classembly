@@ -1,5 +1,5 @@
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
