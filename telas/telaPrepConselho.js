@@ -48,8 +48,6 @@ function telaImportarNotas({ navigation }) {
 		let doc = DocumentPicker.getDocumentAsync({
 			copyToCacheDirectory: false,
 		}).then(async p => {
-			
-			
 			const payloadJson = await FileSystem.readAsStringAsync(p.uri);
 			console.log((payloadJson));
 			//csvToJson.generateJsonFileFromCsv(p.,"wa")
@@ -69,19 +67,7 @@ function telaImportarNotas({ navigation }) {
 		</View>
 	);
 	
-	return(
-		<View style={styles.container}>
-			{//tirar isso quando funcionar
-				false && <>
-				<TouchableOpacity style={styles.butaoHomePuro} onPress={() => press()}>
-					<Text>asdasd</Text>
-				</TouchableOpacity>
-				<Text>{txt}</Text>
-				</>
-			}
-			<Text>placeholder</Text>
-		</View>
-	);
+	
 }
 
 function telaAutoAval({navigation}){
