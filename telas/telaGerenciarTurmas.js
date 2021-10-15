@@ -321,7 +321,7 @@ function telaComentarios({ route, navigation }){
 					
 						return(
 							<List.Section style={styles.listSection} key={index}>
-								<List.Accordion title={a.nome}>
+								<List.Accordion title={a.nome} style={{backgroundColor: '#d9d9d9'}}>
 									<Text style={{ marginBottom: 5, padding: 5 }}>{a.printComentarios()}</Text>
 									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios.length})}>
 										<Text style={{ color: '#f4f9fc' }}>Adicionar novo comentário</Text>
