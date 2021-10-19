@@ -8,6 +8,7 @@ import firebase from 'firebase';
 import 'firebase/firestore';
 import { IDContext } from "./context.js";
 import PieChart from 'react-native-pie-chart';
+import { Pages } from 'react-native-pages';
 
 import alunosPrioridade from "./assets/alunosPrioridade.png";
 import estatIndividuais from "./assets/estatIndividuais.png";
@@ -269,8 +270,11 @@ function telaEstatIndividuais({ navigation }) {
 
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
 	const [alunos, setAlunos] = React.useState([]);
-	const [data, setData] = React.useState([1, 1, 1]);
+	const [dataAprendizado, setDataAprendizado] = React.useState([1, 1, 1]);
+	const [dataComportamento, setDataComportamento] = React.useState([1, 1]);
 	const idTurma = React.useContext(IDContext);
+	const sliceColor1 = ['#918bd1','#ada8dc','#c8c5e8'];
+	const sliceColor2 = ['#918bd1','#ada8dc'];
 
 	useEffect(() => {
 
@@ -285,22 +289,25 @@ function telaEstatIndividuais({ navigation }) {
 					.collection('alunos')
 					.onSnapshot((query) => {
 
-						const list = [], contadores = [0, 0, 0];
+						const list = [], contadores1 = [0, 0, 0], contadores2 = [0, 0];
 
 						query.forEach((doc) => {
 							list.push(doc.data());
 
 							if(doc.data().aprendizado == 'Auditivo'){
-								contadores[0] += 1;
+								contadores1[0] += 1;
 							}else if(doc.data().aprendizado == 'Cinestésico'){
-								contadores[1] += 1;
+								contadores1[1] += 1;
 							}else{
-								contadores[2] += 1;
+								contadores1[2] += 1;
 							}
+
+							doc.data().comp == 'Participativo' ? contadores2[0]++ : contadores2[1]++;
 						})
 
 						setAlunos(list);
-						setData(contadores);
+						setDataAprendizado(contadores1);
+						setDataComportamento(contadores2);
 						setProntoAlunos(true);
 					});
 			}
@@ -309,28 +316,77 @@ function telaEstatIndividuais({ navigation }) {
 		getAlunos();
 	});
 
-	const sliceColor = ['#918bd1','#ada8dc','#c8c5e8'];
 
-	return (
-		<View style={styles.container}>
-			<View>
-				{prontoAlunos && <>
-					<PieChart
-						widthAndHeight={0.8 * Dimensions.get('window').width}
-						series={data}
-						sliceColor={sliceColor}
-					/>
-					<View style={{justifyContent: 'center', textAlign: 'center', alignItems: 'center'}}>
-						<Text>Auditivo: <Text style={{color: '#918bd1'}}>{data[0] + ' ' + (data[0] > 1 ? 'alunos' : 'aluno')}</Text></Text>
-						<Text>Cinestésico: <Text style={{color: '#ada8dc'}}>{data[1] + ' ' + (data[1] > 1 ? 'alunos' : 'aluno')}</Text></Text>
-						<Text>Visual: <Text style={{color: '#c8c5e8'}}>{data[1] + ' ' + (data[1] > 1 ? 'alunos' : 'aluno')}</Text></Text>
-					</View>
-				</>}
-				{!prontoAlunos && <>
-					<ActivityIndicator size='large' color="#766ec5"/>
-				</>}
+	let GraficoAprendizado = () => {
+
+		return(
+			<View style={{
+				flex: 1,
+				alignItems: 'center',
+				justifyContent: 'center',
+			}}>
+				<Title style={{marginVertical: 10}}>Modo de aprendizado</Title>
+				<PieChart
+					widthAndHeight={0.8 * Dimensions.get('window').width}
+					series={dataAprendizado}
+					sliceColor={sliceColor1}
+				/>
+				<View style={{justifyContent: 'center', textAlign: 'center', alignItems: 'center'}}>
+					<Text>Auditivo: <Text style={{color: '#918bd1'}}>{dataAprendizado[0] + ' ' + (dataAprendizado[0] != 1 ? 'alunos' : 'aluno')}</Text></Text>
+					<Text>Cinestésico: <Text style={{color: '#ada8dc'}}>{dataAprendizado[1] + ' ' + (dataAprendizado[1] != 1 ? 'alunos' : 'aluno')}</Text></Text>
+					<Text>Visual: <Text style={{color: '#c8c5e8'}}>{dataAprendizado[2] + ' ' + (dataAprendizado[2] != 1 ? 'alunos' : 'aluno')}</Text></Text>
+				</View>
 			</View>
-		</View>
+		);
+	}
+
+	let GraficoComportamento = () => {
+
+		return(
+			<View style={{
+				flex: 1,
+				alignItems: 'center',
+				justifyContent: 'center',
+			}}>
+				<Title style={{marginVertical: 10}}>Comportamento</Title>
+				<PieChart
+					widthAndHeight={0.8 * Dimensions.get('window').width}
+					series={dataComportamento}
+					sliceColor={sliceColor2}
+				/>
+				<View style={{justifyContent: 'center', textAlign: 'center', alignItems: 'center'}}>
+					<Text>Participativo: <Text style={{color: '#918bd1'}}>{dataComportamento[0] + ' ' + (dataComportamento[0] != 1 ? 'alunos' : 'aluno')}</Text></Text>
+					<Text>Não Participativo: <Text style={{color: '#ada8dc'}}>{dataComportamento[1] + ' ' + (dataComportamento[1] != 1 ? 'alunos' : 'aluno')}</Text></Text>
+				</View>
+			</View>
+		);
+	}
+
+	let GraficoNotas = () => {
+
+		return(
+			<View style={{
+				flex: 1,
+				justifyContent: 'center',
+				alignContent: 'center',
+				alignItems: 'center',
+			}}>
+  				<Text>aqui ta foda</Text>
+			</View>
+		);
+	}
+
+	return( 
+		<>
+		{prontoAlunos && <Pages indicatorColor={'black'}>
+			<GraficoAprendizado />
+			<GraficoComportamento />
+			<GraficoNotas />
+		</Pages>}
+		{!prontoAlunos &&
+			<ActivityIndicator size='large' color='#766ec5'/>
+		}
+		</>
 	);
 }
 
