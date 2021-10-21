@@ -3,10 +3,14 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator, Dim
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { FAB, Paragraph } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
 import { logout } from "../firebase/firebaseMethods.js";
 import { useNavigation } from '@react-navigation/native';
+import * as DocumentPicker from 'expo-document-picker';
+import * as WebBrowser from 'expo-web-browser';
+import * as FileSystem from 'expo-file-system';
 
 import logo from "./assets/logo.png";
 import gerencTurmas from "./assets/iconGerenciarTurmas.png";
@@ -72,7 +76,7 @@ function MenuPerfil( props ){
 	);
 }
 
-function TelaSelectTurma(){
+function telaSelectTurma(){
 	
 	const navigation = useNavigation();
 	
@@ -111,8 +115,7 @@ function TelaSelectTurma(){
 				let doc = await firebase
 				.firestore()
 				.collection('turmas')
-				.get()
-				.then((query) => {
+				.onSnapshot((query) => {
 					
 					const list = [];
 					
@@ -165,6 +168,119 @@ function TelaSelectTurma(){
 			<TouchableOpacity style={styles.butaoSair} onPress={() => sair()}>
 				<Text style={styles.txtbotaohomePuro}>Sair</Text>
 			</TouchableOpacity>
+			<FAB
+				style={styles.fab}
+				icon="plus"
+				color="white"
+				onPress={() => navigation.navigate("Adicionar Turma")}
+			/>
+		</View>
+	);
+}
+
+function telaAddTurma(){
+
+	let currentUserUID = firebase.auth().currentUser.uid;
+	const [email, setEmail] = useState('');
+	const [prontoEmail, setProntoEmail] = useState(false);
+
+	useEffect(() => {
+
+		async function getUserInfo(){
+			
+			if(!prontoEmail){
+			
+				let doc = await firebase
+				.firestore()
+				.collection('users')
+				.doc(currentUserUID)
+				.get();
+
+				if (doc.exists){
+					let dataObj = doc.data();
+					setEmail(dataObj.email);
+					setProntoEmail(true);
+				}
+			}
+		}
+		
+		getUserInfo();
+	})
+
+	async function openLink() {
+		WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});	
+	}
+
+	async function pickCSV() {
+
+		let doc = DocumentPicker.getDocumentAsync({
+			copyToCacheDirectory: false,
+		}).then(async p => { //CW: codigo ruim
+
+			const stringCSV = await FileSystem.readAsStringAsync(p.uri);
+			let arr = stringCSV.split('\n');
+			arr.pop();
+			let idTurma = null, nomeTurma = null, count = 0;
+
+			arr.forEach((linha, index) => {
+
+				let arr2 = linha.replace('/', '').split('","');
+
+				if(index == 0 || index == 1 || index == 3 || index == 4 || index == 5 || index == 6 || index == 7 || index == 8 || index == 9 || index == arr.length - 1){
+					//aqui é pra ignorar as linhas vazias
+				}else if(index == 2){
+					idTurma = arr2[1].split(' - ')[0];
+					nomeTurma = arr2[1].split(' - ')[1];
+					firebase
+						.firestore()
+						.collection('turmas')
+						.doc(idTurma)
+						.set({
+							nome: nomeTurma,
+							professor: email
+						});
+
+				}else{
+					let obj = {
+						matricula: arr2[1],
+						nome: arr2[2],
+					};
+					firebase
+						.firestore()
+						.collection('alunos')
+						.doc(obj.matricula)
+						.set({
+							nome: obj.nome
+						});
+					count += 1;
+					firebase
+						.firestore()
+						.collection('turmas')
+						.doc(idTurma)
+						.collection('alunos')
+						.doc('a' + String(count).padStart(2, '0'))
+						.set({
+							aprendizado: 'Auditivo',
+							comp: 'Participativo',
+							id_aluno: obj.matricula,
+							motivo_prio: null,
+							nome: obj.nome,
+							prio: false
+						})
+				}
+			});
+		});
+	}
+
+	return (
+		<View style={styles.container}>
+			<Paragraph style={{textAlign: 'center', marginBottom: 15}}>Para adicionar uma turma, clique no botão abaixo para abrir o conversor, selecione a planilha de notas da turma e baixe o arquivo em formato CSV. Após isso, clique no segundo botão e selecione o arquivo CSV do seu dispositivo.</Paragraph> 
+			<TouchableOpacity onPress={() => openLink()} style={styles.butaoHomePuro}>
+				<Text style={styles.txtbotaohomePuro}>Abrir Conversor</Text>
+			</TouchableOpacity>
+			<TouchableOpacity onPress={() => pickCSV()} style={styles.butaoHomePuro}>
+				<Text style={styles.txtbotaohomePuro}>Selecionar planilha</Text>
+			</TouchableOpacity>
 		</View>
 	);
 }
@@ -209,8 +325,9 @@ function homeDrawer(){
 export default function homeStack(){
 	
 	return(
-		<Stack.Navigator>
-			<Stack.Screen name="SelectTurma" component={TelaSelectTurma} options={{headerShown: false}}/>
+		<Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#766ec5' }, headerTintColor: '#f4f9fc' }}>
+			<Stack.Screen name="SelectTurma" component={telaSelectTurma} options={{headerShown: false}}/>
+			<Stack.Screen name="Adicionar Turma" component={telaAddTurma}/>
 			<Stack.Screen name="HomeDrawer" component={homeDrawer} options={{headerShown: false}}/>
 		</Stack.Navigator>
 	);
@@ -283,6 +400,14 @@ const styles = StyleSheet.create({
 		marginBottom: 30,
 	},
 	
+	butaoHomePuro: {
+		backgroundColor: '#766ec5',
+		padding: 5,
+		borderRadius: 5,
+		marginBottom: 50,
+		width: "80%",
+	},
+
 	txtbotao: {
 		fontSize: 18,
 		color: '#1f1f1f',
@@ -292,6 +417,14 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		color: '#f4f9fc',
 		textAlign: 'center',
+	},
+
+	fab: {
+		position: 'absolute',
+		margin: 16,
+		right: 0,
+		bottom: 0,
+		backgroundColor: '#766ec5',
 	},
  
 });
