@@ -2,16 +2,18 @@ import React, { useState, state, Component, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
-import { Card, Title, Paragraph, TextInput, FAB } from 'react-native-paper';
+import { Card, Title, Paragraph, TextInput, FAB, IconButton } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
 import AwesomeAlert from 'react-native-awesome-alerts';
 import * as DocumentPicker from 'expo-document-picker';
 import * as WebBrowser from 'expo-web-browser';
 import * as FileSystem from 'expo-file-system';
+import { Pages } from 'react-native-pages';
 
 import importarNotas from "./assets/importarNotas.png";
 import autoAvalDocente from "./assets/autoAvalDocente.png";
+import seta from "./assets/right-arrow.png";
 
 const Stack = createStackNavigator();
 
@@ -25,7 +27,7 @@ function telaPrepConselho({ navigation }) {
 			</TouchableOpacity>
 			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("AutoAval")}>
 				<Image style={styles.iconBotao} source={autoAvalDocente} />
-				<Text style={styles.txtbotaohome}>Auto-Avaliação Docente</Text>
+				<Text style={styles.txtbotaohome}>Autoavaliação Docente</Text>
 			</TouchableOpacity>
 		</View>
 	);
@@ -47,17 +49,49 @@ function telaImportarNotas({ navigation }) {
 		});
 	}
 
+	const Instruções = () => {
+
+		return(
+			<View style={styles.container}>
+				<View style={{
+					alignItems: 'center',
+					textAlign: 'center',
+					justifyContent: 'center',
+					width: 0.9 * Dimensions.get('window').width,
+					height: 0.3 * Dimensions.get('window').height,
+					borderRadius: 5,
+					backgroundColor: '#766ec5',
+				}}>
+					<Paragraph style={{
+						textAlign: 'center', 
+						color: '#f4f9fc',
+						fontSize: 14,
+					}}>Para atualizar as notas, clique no botão "Abrir conversor", selecione a planilha de notas da turma e baixe o arquivo em formato CSV. Após isso, clique no botão "Selecionar CSV" e selecione o arquivo CSV do seu dispositivo.</Paragraph> 
+				</View>
+				<Image source={seta} style={{width: 50, height: 50, marginTop: 5}} />
+			</View>
+		);
+	}
+
+	const Conversor = () => {
+		
+		return(
+			<View style={styles.container}>
+				<TouchableOpacity onPress={() => openLink()} style={styles.butaoHomePuro}>
+					<Text style={styles.txtbotaohomePuro}>Abrir conversor</Text>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={() => pickCSV()} style={styles.butaoHomePuro}>
+					<Text style={styles.txtbotaohomePuro}>Selecionar CSV</Text>
+				</TouchableOpacity>
+			</View>
+		);
+	}
+
 	return (
-		<View style={styles.container}>
-			<Text>Para atualizar as notas desta turma, clique no botão abaixo para abrir o conversor, selecione a planilha de notas e baixe o arquivo em formato CSV. Após isso, clique no segundo botão e selecione o arquivo CSV do seu dispositivo.
-			</Text> 
-			<TouchableOpacity onPress={() => openLink()} style={styles.butaoHomePuro}>
-				<Text style={styles.txtbotaohomePuro}>Abrir Conversor</Text>
-			</TouchableOpacity>
-			<TouchableOpacity onPress={() => pickCSV()} style={styles.butaoHomePuro}>
-				<Text style={styles.txtbotaohomePuro}>Selecionar planilha</Text>
-			</TouchableOpacity>
-		</View>
+		<Pages indicatorColor={'#766ec5'}>
+			<Instruções />
+			<Conversor />
+		</Pages>
 	);
 	
 	
@@ -110,9 +144,15 @@ function telaAutoAval({ navigation }) {
 						lastAval += 1;
 
 						return (
-							<Card style={{ width: width, marginBottom: 15, marginTop: 15 }} key={index}>
+							<Card style={styles.cardAutoAval} key={index}>
 								<Card.Content>
-									<Title>Auto-Avaliação {a.data}</Title>
+									<View style={styles.headerCard}>
+										<Title>Autoavaliação {a.data}</Title>
+										<View style={{ flexDirection: "row" }}>
+											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => alert('oi')}></IconButton>
+											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => alert('oi')}></IconButton>
+										</View>
+									</View>
 									<Paragraph>{a.txt}</Paragraph>
 								</Card.Content>
 							</Card>
@@ -177,10 +217,14 @@ function telaEscreverAutoAval({ route }) {
 				numberOfLines={6}
 				onChangeText={(text) => setTxt(text)}
 				value={txt}
+				placeholder="Digite a autoavaliação..."
 			/>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
-				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
-			</TouchableOpacity>
+			<FAB
+				style={styles.fab}
+				icon="content-save"
+				color="white"
+				onPress={() => press()}
+			/>
 			<AwesomeAlert
 				show={showAlert}
 				showProgress={false}
@@ -204,7 +248,8 @@ export default function stackPrepConselho({ navigation }) {
 				name={"MainPrepConselho"}
 				component={telaPrepConselho}
 				options={{
-					headerShown: false
+					title: 'Preparação para o conselho',
+					headerLeft: null
 				}}
 			/>
 			<Stack.Screen
@@ -218,14 +263,14 @@ export default function stackPrepConselho({ navigation }) {
 				name={"AutoAval"}
 				component={telaAutoAval}
 				options={{
-					title: 'Auto-avaliação'
+					title: 'Autoavaliação'
 				}}
 			/>
 			<Stack.Screen
 				name={"EscreverAutoAval"}
 				component={telaEscreverAutoAval}
 				options={{
-					title: 'Escrever auto-avaliação'
+					title: 'Escrever autoavaliação'
 				}}
 			/>
 		</Stack.Navigator>
@@ -273,9 +318,8 @@ const styles = StyleSheet.create({
 
 	txtbotaohomePuro: {
 		fontSize: 20,
-		color: '#f4f9fc',
-		textAlignVertical: "center",
-		textAlign: "center",
+		color: '#766ec5',
+		textAlign: 'center',
 	},
 
 	butaoHome: {
@@ -289,10 +333,12 @@ const styles = StyleSheet.create({
 	},
 
 	butaoHomePuro: {
-		backgroundColor: '#766ec5',
+		backgroundColor: '#f4f9fc',
+		borderColor: '#766ec5',
+		borderWidth: 1,
 		padding: 5,
 		borderRadius: 5,
-		marginBottom: 50,
+		marginBottom: 25,
 		width: "80%",
 	},
 
@@ -308,6 +354,17 @@ const styles = StyleSheet.create({
 		right: 0,
 		bottom: 0,
 		backgroundColor: '#766ec5',
+	},
+
+	cardAutoAval: {
+		width: 0.95 * Dimensions.get('window').width,
+		margin: 10,
+	},
+
+	headerCard: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center'
 	},
 
 });

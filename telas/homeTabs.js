@@ -1,9 +1,9 @@
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator, Dimensions, ScrollView, Alert } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { FAB, Paragraph } from 'react-native-paper';
+import { FAB, Paragraph, Button } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
 import { logout } from "../firebase/firebaseMethods.js";
@@ -11,11 +11,13 @@ import { useNavigation } from '@react-navigation/native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as WebBrowser from 'expo-web-browser';
 import * as FileSystem from 'expo-file-system';
+import { Pages } from 'react-native-pages';
 
 import logo from "./assets/logo.png";
 import gerencTurmas from "./assets/iconGerenciarTurmas.png";
 import prepConselho from "./assets/iconPrepConselho.png";
 import visualizarEstat from "./assets/iconVisualizarEstat.png";
+import seta from "./assets/right-arrow.png";
 
 import stackGerenciarTurmas from "./telaGerenciarTurmas.js";
 import stackPrepConselho from "./telaPrepConselho.js";
@@ -58,20 +60,67 @@ function MenuPerfil( props ){
 	});
 	
 	const press = () => {
-		logout();
-		navigation.replace('Loading');
+		Alert.alert(
+			"Deseja realmente sair?",
+			null,
+			[
+			  	{
+					text: "Não",
+					onPress: () => {
+						console.log('cancelado')
+					},
+			 	},
+			 	{ 
+					text: "Sim", 
+					onPress: () => {
+						logout();
+						navigation.replace('Loading');
+					} 
+				}
+			]
+		);
+		
 	};
 	
 	return(
 		<View style={styles.containerMenu}>
-			<Image style={styles.logo1} source={logo} />
-			<Text style={{color: '#d9d9d9'}}>Logado como {nome}</Text>
-			<TouchableOpacity style={styles.butao} onPress={() => navigation.goBack()}>
-				<Text style={styles.txtbotao}>Selecionar turma</Text>
-			</TouchableOpacity>
-			<TouchableOpacity style={styles.butao} onPress={press}>
-				<Text style={styles.txtbotao}>Sair</Text>
-			</TouchableOpacity>
+			<View style={{
+				flex: 0.3,
+				alignItems: 'center',
+				justifyContent: 'center',
+			}}>
+				<Image style={styles.logo1} source={logo} />
+			</View>
+			<View style={{
+				flex: 0.7,
+				alignItems: 'center',
+				justifyContent: 'flex-start',
+			}}>
+				<Text style={{color: 'white', fontSize: 18}}>Logado como {nome}</Text>
+				<View style={{
+					alignItems: 'flex-start',
+					justifyContent: 'center',
+				}}>
+					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+						<View style={{flex: 1, height: 1, backgroundColor: 'white', marginVertical: 20}} />
+					</View>
+					<Button icon="selection-search" color="white" onPress={() => navigation.goBack()} style={{
+						backgroundColor: '#766ec5',
+						marginBottom: 15
+					}}>Selecionar turma</Button>
+					<Button icon="plus" color="white" onPress={() => navigation.navigate("Adicionar Turma")} style={{
+						backgroundColor: '#766ec5',
+						marginBottom: 15
+					}}>Adicionar turma</Button>
+					<View style={{flexDirection: 'row', alignItems: 'center'}}>
+						<View style={{flex: 1, height: 1, backgroundColor: 'white', marginBottom: 20, width: 0.5 * Dimensions.get('window').width}} />
+					</View>
+					<Button icon="logout" color="white" onPress={() => press()} style={{
+						backgroundColor: '#766ec5',
+						marginBottom: 15
+					}}>Sair</Button>
+				</View>
+			</View>
 		</View>
 	);
 }
@@ -96,13 +145,11 @@ function telaSelectTurma(){
 				.firestore()
 				.collection('users')
 				.doc(currentUserUID)
-				.get();
-
-				if (doc.exists){
-					let dataObj = doc.data();
-					setEmail(dataObj.email);
+				.onSnapshot((query) => {
+					let varEmail = query.data().email;
+					setEmail(varEmail);
 					setProntoEmail(true);
-				}
+				});
 			}
 		}
 		
@@ -111,7 +158,7 @@ function telaSelectTurma(){
 		async function getTurmas(){
 			
 			if(!prontoTurmas){
-			
+
 				let doc = await firebase
 				.firestore()
 				.collection('turmas')
@@ -121,7 +168,10 @@ function telaSelectTurma(){
 					
 					query.forEach((doc) => {
 						if(doc.data().professor === email){
-							list.push(doc.id);
+							list.push({
+								id: doc.id,
+								data: doc.data()
+							});
 						}
 					})
 					
@@ -149,25 +199,52 @@ function telaSelectTurma(){
 	
 	return(
 		<View style={styles.container}>
-			<Text style={styles.txtbotao}>Selecione uma turma</Text>
-			<View style={styles.containerTurmas}>
-				{!prontoTurmas && 
-					<ActivityIndicator size='large' color="#766ec5" style={{marginVertical: 40}}/>
-				}
-				{prontoTurmas && turmas.map((t, index) => {
-					return(
-						<TouchableOpacity key={index} style={styles.butaoHome} onPress={() => press(t)}>
-							<Text style={styles.txtbotaohomePuro}>{t.toUpperCase()}</Text>
-						</TouchableOpacity>
-					);
-				})}
-				{(prontoTurmas && (turmas.length == 0)) && 
-					<Text style={styles.txtbotao}>Nenhuma turma encontrada</Text>
-				}
+			<View style={{
+				flex: 0.25,
+				alignItems: 'center',
+				textAlign: 'center',
+				justifyContent: 'center',
+				backgroundColor: '#766ec5',
+				width: Dimensions.get('window').width,
+				borderBottomLeftRadius: 15,
+				borderBottomRightRadius: 15,
+			}}>
+				<Text style={{
+					color: 'white',
+					fontSize: 28,
+					fontWeight: 'bold',
+				}}>SELECIONE UMA TURMA</Text>
 			</View>
-			<TouchableOpacity style={styles.butaoSair} onPress={() => sair()}>
-				<Text style={styles.txtbotaohomePuro}>Sair</Text>
-			</TouchableOpacity>
+			<View style={{
+				flex: 0.75,
+				alignItems: 'center',
+				textAlign: 'center',
+				justifyContent: 'center',
+			}}>
+				<ScrollView contentContainerStyle={styles.containerScroll}>
+					<View style={styles.containerTurmas}>
+						{!prontoTurmas && 
+							<ActivityIndicator size='large' color="#766ec5" style={{marginVertical: 40}}/>
+						}
+						{prontoTurmas && turmas.map((t, index) => {
+							return(<>
+								<TouchableOpacity key={index} style={styles.butaoHomePuro} onPress={() => press(t.id)}>
+									<Text style={styles.txtbotaohomePuro}>{t.data.nome} - {t.id}</Text>
+								</TouchableOpacity>
+							</>);
+						})}
+						{(prontoTurmas && (turmas.length == 0)) && 
+							<Text style={styles.txtbotao}>Nenhuma turma encontrada</Text>
+						}
+					</View>
+				</ScrollView>
+			</View>
+			<FAB
+				style={styles.fab2}
+				icon="account-arrow-left"
+				color="white"
+				onPress={() => sair()}
+			/>
 			<FAB
 				style={styles.fab}
 				icon="plus"
@@ -272,16 +349,49 @@ function telaAddTurma(){
 		});
 	}
 
+	const Instruções = () => {
+
+		return(
+			<View style={styles.container}>
+				<View style={{
+					alignItems: 'center',
+					textAlign: 'center',
+					justifyContent: 'center',
+					width: 0.9 * Dimensions.get('window').width,
+					height: 0.3 * Dimensions.get('window').height,
+					borderRadius: 5,
+					backgroundColor: '#766ec5',
+				}}>
+					<Paragraph style={{
+						textAlign: 'center', 
+						color: '#f4f9fc',
+						fontSize: 14,
+					}}>Para adicionar uma turma, clique no botão "Abrir conversor", selecione a planilha de notas da turma e baixe o arquivo em formato CSV. Após isso, clique no botão "Selecionar CSV" e selecione o arquivo CSV do seu dispositivo.</Paragraph> 
+				</View>
+				<Image source={seta} style={{width: 50, height: 50, marginTop: 5}} />
+			</View>
+		);
+	}
+
+	const Conversor = () => {
+		
+		return(
+			<View style={styles.container}>
+				<TouchableOpacity onPress={() => openLink()} style={styles.butaoHomePuro}>
+					<Text style={styles.txtbotaohomePuro}>Abrir conversor</Text>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={() => pickCSV()} style={styles.butaoHomePuro}>
+					<Text style={styles.txtbotaohomePuro}>Selecionar CSV</Text>
+				</TouchableOpacity>
+			</View>
+		);
+	}
+
 	return (
-		<View style={styles.container}>
-			<Paragraph style={{textAlign: 'center', marginBottom: 15}}>Para adicionar uma turma, clique no botão abaixo para abrir o conversor, selecione a planilha de notas da turma e baixe o arquivo em formato CSV. Após isso, clique no segundo botão e selecione o arquivo CSV do seu dispositivo.</Paragraph> 
-			<TouchableOpacity onPress={() => openLink()} style={styles.butaoHomePuro}>
-				<Text style={styles.txtbotaohomePuro}>Abrir Conversor</Text>
-			</TouchableOpacity>
-			<TouchableOpacity onPress={() => pickCSV()} style={styles.butaoHomePuro}>
-				<Text style={styles.txtbotaohomePuro}>Selecionar planilha</Text>
-			</TouchableOpacity>
-		</View>
+		<Pages indicatorColor={'#766ec5'}>
+			<Instruções />
+			<Conversor />
+		</Pages>
 	);
 }
 
@@ -353,10 +463,16 @@ const styles = StyleSheet.create({
 	},
 
 	containerTurmas: {
-		marginVertical: 20, 
 		width: Dimensions.get('window').width,
 		justifyContent: 'center',
 		alignItems: 'center',
+	},
+
+	containerScroll: {
+		flexGrow: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		width: Dimensions.get('window').width,
 	},
 	
 	iconTab: {
@@ -366,9 +482,8 @@ const styles = StyleSheet.create({
 	},
   
 	logo1: {
-		width: "90%",
+		width: "95%",
 		height: undefined,
-		marginBottom: 150,
 		aspectRatio: 1233/333,
 	},
   
@@ -396,15 +511,18 @@ const styles = StyleSheet.create({
 		backgroundColor: '#ffffff',
 		borderRadius: 5,
 		padding: 5,
-		marginTop: 30,
 		marginBottom: 30,
+		justifyContent: 'space-between',
+		flexDirection: 'row',
 	},
 	
 	butaoHomePuro: {
-		backgroundColor: '#766ec5',
+		backgroundColor: '#f4f9fc',
+		borderColor: '#766ec5',
+		borderWidth: 1,
 		padding: 5,
 		borderRadius: 5,
-		marginBottom: 50,
+		marginBottom: 25,
 		width: "80%",
 	},
 
@@ -415,7 +533,7 @@ const styles = StyleSheet.create({
 	
 	txtbotaohomePuro: {
 		fontSize: 20,
-		color: '#f4f9fc',
+		color: '#766ec5',
 		textAlign: 'center',
 	},
 
@@ -423,6 +541,14 @@ const styles = StyleSheet.create({
 		position: 'absolute',
 		margin: 16,
 		right: 0,
+		bottom: 0,
+		backgroundColor: '#766ec5',
+	},
+
+	fab2: {
+		position: 'absolute',
+		margin: 16,
+		left: 0,
 		bottom: 0,
 		backgroundColor: '#766ec5',
 	},

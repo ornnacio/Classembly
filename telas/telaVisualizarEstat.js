@@ -246,10 +246,14 @@ function escreverMotivo({ route, navigation }) {
 				numberOfLines={6}
 				onChangeText={(text) => setTxt(text)}
 				value={txt}
+				placeholder="Digite o motivo da prioridade..."
 			/>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={press}>
-				<Text style={styles.txtbotaohomePuro}>Salvar</Text>
-			</TouchableOpacity>
+			<FAB
+				style={styles.fab}
+				icon="content-save"
+				color="white"
+				onPress={() => press()}
+			/>
 			<AwesomeAlert
 				show={showAlert}
 				showProgress={false}
@@ -325,16 +329,67 @@ function telaEstatIndividuais({ navigation }) {
 				alignItems: 'center',
 				justifyContent: 'center',
 			}}>
-				<Title style={{marginVertical: 10}}>Modo de aprendizado</Title>
-				<PieChart
-					widthAndHeight={0.8 * Dimensions.get('window').width}
-					series={dataAprendizado}
-					sliceColor={sliceColor1}
-				/>
-				<View style={{justifyContent: 'center', textAlign: 'center', alignItems: 'center'}}>
-					<Text>Auditivo: <Text style={{color: '#918bd1'}}>{dataAprendizado[0] + ' ' + (dataAprendizado[0] != 1 ? 'alunos' : 'aluno')}</Text></Text>
-					<Text>Cinestésico: <Text style={{color: '#ada8dc'}}>{dataAprendizado[1] + ' ' + (dataAprendizado[1] != 1 ? 'alunos' : 'aluno')}</Text></Text>
-					<Text>Visual: <Text style={{color: '#c8c5e8'}}>{dataAprendizado[2] + ' ' + (dataAprendizado[2] != 1 ? 'alunos' : 'aluno')}</Text></Text>
+				<View style={{
+					flex: 0.2,
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: Dimensions.get('window').width,
+					borderWidth: 1,
+					borderColor: '#766ec5',
+					borderBottomLeftRadius: 15,
+					borderBottomRightRadius: 15,
+				}}>
+					<Title style={{
+						color: '#766ec5'
+					}}>MODO DE APRENDIZADO</Title>
+				</View>
+				<View style={{
+					flex: 0.8,
+					marginTop: 30,
+				}}>
+					<PieChart
+						widthAndHeight={0.8 * Dimensions.get('window').width}
+						series={dataAprendizado}
+						sliceColor={sliceColor1}
+					/>
+					<View style={{
+						justifyContent: 'center', 
+						textAlign: 'center', 
+						alignItems: 'center', 
+						marginTop: 30,
+						borderColor: '#766ec5',
+						borderWidth: 1,
+						borderRadius: 5,
+						padding: 10
+					}}>
+						<View style={{flexDirection: 'row', alignItems: 'center'}}>
+							<View style={{
+								height: 15,
+								width: 15,
+								borderRadius: 1000,
+								backgroundColor: '#918bd1',
+								marginRight: 5
+							}} /><Text style={{fontSize: 18}}>Auditivo: {dataAprendizado[0] + ' ' + (dataAprendizado[0] != 1 ? 'alunos' : 'aluno')}</Text>
+						</View>
+						<View style={{flexDirection: 'row', alignItems: 'center'}}>
+							<View style={{
+								height: 15,
+								width: 15,
+								borderRadius: 1000,
+								backgroundColor: '#ada8dc',
+								marginRight: 5
+							}} /><Text style={{fontSize: 18}}>Cinestésico: {dataAprendizado[1] + ' ' + (dataAprendizado[1] != 1 ? 'alunos' : 'aluno')}</Text>
+						</View>
+						<View style={{flexDirection: 'row', alignItems: 'center'}}>
+							<View style={{
+								height: 15,
+								width: 15,
+								borderRadius: 1000,
+								backgroundColor: '#c8c5e8',
+								marginRight: 5
+							}} /><Text style={{fontSize: 18}}>Visual: {dataAprendizado[2] + ' ' + (dataAprendizado[2] != 1 ? 'alunos' : 'aluno')}</Text>
+						</View>
+					</View>
 				</View>
 			</View>
 		);
@@ -348,15 +403,58 @@ function telaEstatIndividuais({ navigation }) {
 				alignItems: 'center',
 				justifyContent: 'center',
 			}}>
-				<Title style={{marginVertical: 10}}>Comportamento</Title>
-				<PieChart
-					widthAndHeight={0.8 * Dimensions.get('window').width}
-					series={dataComportamento}
-					sliceColor={sliceColor2}
-				/>
-				<View style={{justifyContent: 'center', textAlign: 'center', alignItems: 'center'}}>
-					<Text>Participativo: <Text style={{color: '#918bd1'}}>{dataComportamento[0] + ' ' + (dataComportamento[0] != 1 ? 'alunos' : 'aluno')}</Text></Text>
-					<Text>Não Participativo: <Text style={{color: '#ada8dc'}}>{dataComportamento[1] + ' ' + (dataComportamento[1] != 1 ? 'alunos' : 'aluno')}</Text></Text>
+				<View style={{
+					flex: 0.2,
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: Dimensions.get('window').width,
+					borderWidth: 1,
+					borderColor: '#766ec5',
+					borderBottomLeftRadius: 15,
+					borderBottomRightRadius: 15,
+				}}>
+					<Title style={{
+						color: '#766ec5'
+					}}>COMPORTAMENTO</Title>
+				</View>
+				<View style={{
+					flex: 0.8,
+					marginTop: 30,
+				}}>
+					<PieChart
+						widthAndHeight={0.8 * Dimensions.get('window').width}
+						series={dataComportamento}
+						sliceColor={sliceColor2}
+					/>
+					<View style={{
+						justifyContent: 'center', 
+						textAlign: 'center', 
+						alignItems: 'center', 
+						marginTop: 30,
+						borderColor: '#766ec5',
+						borderWidth: 1,
+						borderRadius: 5,
+						padding: 10
+					}}>
+						<View style={{flexDirection: 'row', alignItems: 'center'}}>
+							<View style={{
+								height: 15,
+								width: 15,
+								borderRadius: 1000,
+								backgroundColor: '#918bd1',
+								marginRight: 5
+							}} /><Text style={{fontSize: 18}}>Participativo: {dataComportamento[0] + ' ' + (dataComportamento[0] != 1 ? 'alunos' : 'aluno')}</Text>
+						</View>
+						<View style={{flexDirection: 'row', alignItems: 'center'}}>
+							<View style={{
+								height: 15,
+								width: 15,
+								borderRadius: 1000,
+								backgroundColor: '#ada8dc',
+								marginRight: 5
+							}} /><Text style={{fontSize: 18}}>Não Participativo: {dataComportamento[1] + ' ' + (dataComportamento[1] != 1 ? 'alunos' : 'aluno')}</Text>
+						</View>
+					</View>
 				</View>
 			</View>
 		);
@@ -378,7 +476,7 @@ function telaEstatIndividuais({ navigation }) {
 
 	return( 
 		<>
-		{prontoAlunos && <Pages indicatorColor={'black'}>
+		{prontoAlunos && <Pages indicatorColor={'#766ec5'}>
 			<GraficoAprendizado />
 			<GraficoComportamento />
 			<GraficoNotas />
@@ -405,7 +503,8 @@ export default function stackVisualizarEstat({ navigation }) {
 				name={"MainVisualizarEstat"}
 				component={telaVisualizarEstat}
 				options={{
-					headerShown: false
+					title: 'Visualizar estatísticas',
+					headerLeft: null
 				}}
 			/>
 			<Stack.Screen

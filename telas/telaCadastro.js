@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity} from 'react-native';
+import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Dimensions } from 'react-native';
 import "firebase/firestore";
 import logo from "./assets/logo.png";
 import { cadastro } from "../firebase/firebaseMethods.js";
@@ -40,8 +40,8 @@ export default function telaCadastro({ navigation }){
 			<TextInput style={styles.txtinput} placeholder='Nome completo' placeholderTextColor='#d9d9d9' onChangeText={setNome} value={nome}/>
 			<TextInput style={styles.txtinput} placeholder='Senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setSenha} value={senha}/>
 			<TextInput style={styles.txtinput} placeholder='Confirmar senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setConfSenha} value={confSenha}/>
-			<TouchableOpacity style={styles.butao} onPress={press}>
-				<Text style={styles.txtbotao}>Cadastrar</Text>
+			<TouchableOpacity style={nome === '' || email === '' || senha === '' || confSenha === '' ? styles.butaoInativo : styles.butao} onPress={press}>
+				<Text style={nome === '' || email === '' || senha === '' || confSenha === '' ? styles.txtbotaoInativo : styles.txtbotao}>Cadastrar</Text>
 			</TouchableOpacity>
 			<StatusBar style="auto" />
 		</View>
@@ -71,7 +71,12 @@ export const styles = StyleSheet.create({
   
 	txtbotao: {
 		fontSize: 18,
-		color: '#1f1f1f',
+		color: '#766ec5',
+	},
+
+	txtbotaoInativo: {
+		fontSize: 18,
+		color: '#e6e6e6',
 	},
   
 	txtinput: {
@@ -89,6 +94,20 @@ export const styles = StyleSheet.create({
 		padding: 5,
 		marginTop: 30,
 		marginBottom: 50,
+		width: 0.3 * Dimensions.get('window').width,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+
+	butaoInativo: {
+		backgroundColor: '#bbb7e2',
+		borderRadius: 5,
+		padding: 5,
+		marginTop: 30,
+		marginBottom: 50,
+		width: 0.3 * Dimensions.get('window').width,
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
   
 	txtclicavel: {

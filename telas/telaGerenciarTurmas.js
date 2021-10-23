@@ -147,91 +147,101 @@ function telaVisualizarTurma({navigation}){
 	
 	return(
 		<View style={styles.container}>
-			<DataTable style={{ width: '100%', marginBottom: 50 }}>
-				<DataTable.Row>
-					<DataTable.Title>Nome do aluno</DataTable.Title>
-					<DataTable.Title>Comportamento</DataTable.Title>
-					<DataTable.Title>Modo de aprendizado</DataTable.Title>
-				</DataTable.Row>
-				{!prontoAlunos &&
-					<ActivityIndicator size='large' color="#766ec5" style={{marginVertical: 10}}/>
-				}
-				{prontoAlunos && alunos.map((a, index) => {
-					
-					let count = c + 1;
-					c = c + 1;
-					let indexA, indexC;
-					arrNome.push(a.nome);
-					arrModo.push(a.aprendizado);
-					arrComp.push(a.comp);
-					
-					if(a.aprendizado === 'Auditivo'){
-						indexA = 0;
-					}else if(a.aprendizado === 'Cinestésico'){
-						indexA = 1;
-					}else{
-						indexA = 2;
-					}
-					
-					if(a.comp === 'Participativo'){
-						indexC = 0;
-					}else if(a.comp === 'Não Participativo'){
-						indexC = 1;
-					}
-					
-					return(
-						<DataTable.Row key={index}>
-							<DataTable.Cell>{arrNome[count]}</DataTable.Cell>
-							<DataTable.Cell>
-								<ModalDropdown 
-									options={['Participativo', 'Não Participativo']}
-									defaultIndex={indexC}
-									defaultValue={a.comp}
-									onSelect={(idx, value) => {arrComp[count] = value}}
-									textStyle={styles.txtDropdownBotao}
-									dropdownTextStyle={styles.txtDropdown}
-									renderRightComponent={() => {
-										return(
-											<View>
-												<Image style={{width: 10, height: 10, marginLeft: 2}} source={downArrow}/>
-											</View>
-										);
-									}}
-								/>
-							</DataTable.Cell>
-							<DataTable.Cell>
-								<ModalDropdown 
-									options={['Auditivo', 'Cinestésico', 'Visual']}
-									defaultIndex={indexA}
-									defaultValue={a.aprendizado}
-									onSelect={(idx, value) => {arrModo[count] = value}}
-									textStyle={styles.txtDropdownBotao}
-									dropdownTextStyle={styles.txtDropdown}
-									renderRightComponent={() => {
-										return(
-											<View>
-												<Image style={{width: 10, height: 10, marginLeft: 2}} source={downArrow}/>
-											</View>
-										);
-									}}
-								/>
-							</DataTable.Cell>
+			<ScrollView contentContainerStyle={styles.containerScroll}>
+				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+					<DataTable style={{ width: Dimensions.get('window').width}}>
+						<DataTable.Row>
+							<DataTable.Title>Nome do aluno</DataTable.Title>
+							<DataTable.Title>Comportamento</DataTable.Title>
+							<DataTable.Title>Modo de aprendizado</DataTable.Title>
 						</DataTable.Row>
-					);
-				})}
-			</DataTable>
-			<AwesomeAlert
-				show={showAlert}
-				showProgress={false}
-				message="Alterações salvas com sucesso!"
-				closeOnTouchOutside={true}
-				closeOnHardwareBackPress={true}
-				showCancelButton={false}
-				showConfirmButton={true}
-				confirmText="OK"
-				confirmButtonColor="green"
-				onConfirmPressed={() => {setShowAlert(false)}}
-			/>
+						{!prontoAlunos &&
+							<ActivityIndicator size='large' color="#766ec5" style={{marginVertical: 10}}/>
+						}
+						{prontoAlunos && alunos.map((a, index) => {
+							
+							let count = c + 1;
+							c = c + 1;
+							let indexA, indexC;
+							arrNome.push(a.nome);
+							arrModo.push(a.aprendizado);
+							arrComp.push(a.comp);
+							
+							if(a.aprendizado === 'Auditivo'){
+								indexA = 0;
+							}else if(a.aprendizado === 'Cinestésico'){
+								indexA = 1;
+							}else{
+								indexA = 2;
+							}
+							
+							if(a.comp === 'Participativo'){
+								indexC = 0;
+							}else if(a.comp === 'Não Participativo'){
+								indexC = 1;
+							}
+							
+							return(
+								<DataTable.Row key={index}>
+									<DataTable.Cell>{arrNome[count]}</DataTable.Cell>
+									<DataTable.Cell style={{justifyContent: 'center'}}>
+										<ModalDropdown 
+											options={['Participativo', 'Não Participativo']}
+											defaultIndex={indexC}
+											defaultValue={a.comp}
+											onSelect={(idx, value) => {arrComp[count] = value}}
+											textStyle={styles.txtDropdownBotao}
+											dropdownTextStyle={styles.txtDropdown}
+											dropdownStyle={{
+												height: 70
+											}}
+											renderRightComponent={() => {
+												return(
+													<View>
+														<Image style={{width: 10, height: 10, marginLeft: 2}} source={downArrow}/>
+													</View>
+												);
+											}}
+										/>
+									</DataTable.Cell>
+									<DataTable.Cell style={{justifyContent: 'center'}}>
+										<ModalDropdown 
+											options={['Auditivo', 'Cinestésico', 'Visual']}
+											defaultIndex={indexA}
+											defaultValue={a.aprendizado}
+											onSelect={(idx, value) => {arrModo[count] = value}}
+											textStyle={styles.txtDropdownBotao}
+											dropdownTextStyle={styles.txtDropdown}
+											dropdownStyle={{
+												height: 105
+											}}
+											renderRightComponent={() => {
+												return(
+													<View>
+														<Image style={{width: 10, height: 10, marginLeft: 2}} source={downArrow}/>
+													</View>
+												);
+											}}
+										/>
+									</DataTable.Cell>
+								</DataTable.Row>
+							);
+						})}
+					</DataTable>
+					<AwesomeAlert
+						show={showAlert}
+						showProgress={false}
+						message="Alterações salvas com sucesso!"
+						closeOnTouchOutside={true}
+						closeOnHardwareBackPress={true}
+						showCancelButton={false}
+						showConfirmButton={true}
+						confirmText="OK"
+						confirmButtonColor="green"
+						onConfirmPressed={() => {setShowAlert(false)}}
+					/>
+				</View>
+			</ScrollView>
 			<FAB
 				style={styles.fab}
 				icon="content-save"
@@ -404,6 +414,7 @@ function telaEscreverComentario({ route, navigation }){
 				numberOfLines={6}
 				onChangeText={(text) => setTxt(text)}
 				value={txt}
+				placeholder="Digite o comentário..."
 			/>
 			<AwesomeAlert
 				show={showAlert}
@@ -417,9 +428,12 @@ function telaEscreverComentario({ route, navigation }){
 				confirmButtonColor="green"
 				onConfirmPressed={() => confirm()}
 			/>
-			<TouchableOpacity style={styles.butaoHomePuro} onPress={() => press()}>
-				<Text style={styles.txtbotaohomePuro}>Salvar Comentário</Text>
-			</TouchableOpacity>
+			<FAB
+				style={styles.fab}
+				icon="content-save"
+				color="white"
+				onPress={() => press()}
+			/>
 		</View>
 	);
 }
@@ -431,7 +445,10 @@ export default function stackGerenciarTurmas({navigation}){
 			<Stack.Screen 
 				name={"MainGerencTurmas"} 
 				component={telaGerenciarTurmas} 
-				options={{headerShown: false}} 
+				options={{
+					title: 'Gerenciar turmas',
+					headerLeft: null
+				}} 
 			/>
 			<Stack.Screen 
 				name={"VisualizarTurma"} 

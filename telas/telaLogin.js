@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Button, Dimensions } from 'react-native';
 import "firebase/firestore";
 import logo from "./assets/logo.png";
 import { login } from "../firebase/firebaseMethods.js";
@@ -13,12 +13,12 @@ export default function telaLogin({ navigation }){
 	function press(){
 		if (email === '' || senha === '') {
 			Alert.alert('Email ou senha inválidos.');
+		}else{
+			login(email, senha);
+			setEmail('');
+			setSenha('');
+			navigation.navigate("Loading");
 		}
-		
-		login(email, senha);
-		setEmail('');
-		setSenha('');
-		navigation.navigate("Loading");
 	}
 	
 	return(
@@ -26,13 +26,13 @@ export default function telaLogin({ navigation }){
 			<Image style={styles.logo1} source={logo} />
 			<TextInput style={styles.txtinput} placeholder='Email Institucional' placeholderTextColor='#d9d9d9' onChangeText={setEmail} value={email}/>
 			<TextInput style={styles.txtinput} placeholder='Senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setSenha} value={senha}/>
-			<TouchableOpacity style={styles.butao} onPress={press}>
-				<Text style={styles.txtbotao}> Entrar </Text>
+			<TouchableOpacity style={email === '' || senha === '' ? styles.butaoInativo : styles.butao} onPress={press} disabled={email === ''}>
+				<Text style={email === '' || senha === '' ? styles.txtbotaoInativo : styles.txtbotao}>Entrar</Text>
 			</TouchableOpacity>
 			
 			<View style={styles.rodape}>
 				<TouchableOpacity style={styles.txtclicavel} onPress={() => navigation.navigate("Cadastro")}>
-					<Text style={styles.txtbotaoTransparente}> Não tem uma conta? </Text>
+					<Text style={styles.txtbotaoTransparente}>Não tem uma conta? Registre-se</Text>
 				</TouchableOpacity>
 			</View>
 			<StatusBar style="auto" />
@@ -65,7 +65,12 @@ export const styles = StyleSheet.create({
   
 	txtbotao: {
 		fontSize: 18,
-		color: '#1f1f1f',
+		color: '#766ec5',
+	},
+
+	txtbotaoInativo: {
+		fontSize: 18,
+		color: '#e6e6e6',
 	},
   
 	txtbotaoTransparente: {
@@ -95,6 +100,20 @@ export const styles = StyleSheet.create({
 		padding: 5,
 		marginTop: 30,
 		marginBottom: 50,
+		width: 0.3 * Dimensions.get('window').width,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+
+	butaoInativo: {
+		backgroundColor: '#bbb7e2',
+		borderRadius: 5,
+		padding: 5,
+		marginTop: 30,
+		marginBottom: 50,
+		width: 0.3 * Dimensions.get('window').width,
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
   
 	txtclicavel: {
