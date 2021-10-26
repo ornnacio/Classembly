@@ -228,7 +228,7 @@ function telaEscreverAutoAval({ route }) {
 			<AwesomeAlert
 				show={showAlert}
 				showProgress={false}
-				message="Auto-avaliação salva com sucesso!"
+				message="Autoavaliação salva com sucesso!"
 				closeOnTouchOutside={false}
 				closeOnHardwareBackPress={false}
 				showCancelButton={false}
