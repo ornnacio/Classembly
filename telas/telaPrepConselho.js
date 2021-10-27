@@ -100,9 +100,12 @@ function telaImportarNotas({ navigation }) {
 function telaAutoAval({ navigation }) {
 
 	const [avalArr, setAvalArr] = useState([]);
+	const [arrIds, setArrIds] = useState([]);
 	const [prontoAval, setProntoAval] = useState(false);
 	let currentUserUID = firebase.auth().currentUser.uid;
 	let lastAval = 0;
+	var teste = -1;
+	var arrTeste = [];
 	let width = 0.9 * Dimensions.get('window').width;
 
 	useEffect(() => {
@@ -117,13 +120,15 @@ function telaAutoAval({ navigation }) {
 					.collection('autoaval')
 					.onSnapshot((query) => {
 
-						const list = [];
+						const list = [], listId = [];
 
 						query.forEach((doc) => {
 							list.push(doc.data());
+							listId.push(doc.id);
 						})
 
 						setAvalArr(list);
+						setArrIds(listId);
 						setProntoAval(true);
 					})
 			}
@@ -131,6 +136,17 @@ function telaAutoAval({ navigation }) {
 
 		getAutoAvaliações();
 	}, [])
+
+	function deleteAval(id){
+
+		firebase
+			.firestore()
+			.collection('users')
+			.doc(currentUserUID)
+			.collection('autoaval')
+			.doc(id)
+			.delete()
+	}
 
 	return (
 		<View style={styles.container}>
@@ -141,16 +157,24 @@ function telaAutoAval({ navigation }) {
 					}
 					{prontoAval && avalArr.map((a, index) => {
 
-						lastAval += 1;
+						teste++;
+
+						if((teste % avalArr.length) == avalArr.length - 1){
+							lastAval = arrIds[teste % avalArr.length];
+						}
+
+						arrTeste[teste] = arrIds[teste % avalArr.length];
+
+						console.log(arrTeste);
 
 						return (
-							<Card style={styles.cardAutoAval} key={index}>
+							<Card style={styles.cardAutoAval} key={teste % avalArr.length} idTeste={arrIds[teste % avalArr.length]}>
 								<Card.Content>
 									<View style={styles.headerCard}>
 										<Title>Autoavaliação {a.data}</Title>
 										<View style={{ flexDirection: "row" }}>
-											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => alert('oi')}></IconButton>
-											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => alert('oi')}></IconButton>
+											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EditarAutoAval", { txt: a.txt, id: arrTeste[index]})}></IconButton>
+											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deleteAval(arrTeste[index])}></IconButton>
 										</View>
 									</View>
 									<Paragraph>{a.txt}</Paragraph>
@@ -183,7 +207,7 @@ function telaEscreverAutoAval({ route }) {
 
 	function press() {
 
-		let numberId = String((route.params.lastAval + 1)).padStart(2, '0');
+		let numberId = String((parseInt(route.params.lastAval.split('aa')[1]) + 1)).padStart(2, '0');
 		let strId = 'aa' + numberId;
 		let strData = d + '/' + m;
 
@@ -200,6 +224,69 @@ function telaEscreverAutoAval({ route }) {
 
 		setShowAlert(true);
 
+	}
+
+	function confirm() {
+		setTxt('');
+		setShowAlert(false);
+		navigation.navigate('AutoAval');
+	}
+
+	return (
+		<View style={styles.container}>
+			<TextInput
+				style={styles.inputBox}
+				underlineColor='#766ec5'
+				multiline={true}
+				numberOfLines={6}
+				onChangeText={(text) => setTxt(text)}
+				value={txt}
+				placeholder="Digite a autoavaliação..."
+			/>
+			<FAB
+				style={styles.fab}
+				icon="content-save"
+				color="white"
+				onPress={() => press()}
+			/>
+			<AwesomeAlert
+				show={showAlert}
+				showProgress={false}
+				message="Autoavaliação salva com sucesso!"
+				closeOnTouchOutside={false}
+				closeOnHardwareBackPress={false}
+				showCancelButton={false}
+				showConfirmButton={true}
+				confirmText="Voltar"
+				confirmButtonColor="green"
+				onConfirmPressed={() => confirm()}
+			/>
+		</View>
+	);
+}
+
+function telaEditarAutoAval({ route }) {
+
+	const [txt, setTxt] = React.useState(route.params.txt);
+	const [showAlert, setShowAlert] = React.useState(false);
+	let idAval = route.params.id;
+	let currentUserUID = firebase.auth().currentUser.uid;
+	const navigation = useNavigation();
+
+	console.log(route.params.id);
+
+	function press(){
+		firebase
+			.firestore()
+			.collection('users')
+			.doc(currentUserUID)
+			.collection('autoaval')
+			.doc(idAval)
+			.update({
+				txt: txt,
+			});
+
+		setShowAlert(true);
 	}
 
 	function confirm() {
@@ -269,6 +356,13 @@ export default function stackPrepConselho({ navigation }) {
 			<Stack.Screen
 				name={"EscreverAutoAval"}
 				component={telaEscreverAutoAval}
+				options={{
+					title: 'Escrever autoavaliação'
+				}}
+			/>
+			<Stack.Screen
+				name={"EditarAutoAval"}
+				component={telaEditarAutoAval}
 				options={{
 					title: 'Escrever autoavaliação'
 				}}
