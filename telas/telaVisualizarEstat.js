@@ -132,8 +132,10 @@ function telaEstudantesPrio({ route, navigation }) {
 								<Card style={styles.cardPrio} key={index}>
 									<Card.Content>
 										<View style={styles.headerCard}>
-											<Title>{a.nome}</Title>
-											<View style={{ flexDirection: "row" }}>
+											<View style={{ flex: 0.7 }}>
+												<Title>{a.nome}</Title>
+											</View>
+											<View style={{ flex: 0.3, flexDirection: "row" }}>
 												<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio })}></IconButton>
 												<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deletar(alunosId[index])}></IconButton>
 											</View>
@@ -185,8 +187,12 @@ function adicionarEstudantePrio({ route, navigation }) {
 							<Card style={styles.cardPrio} key={index}>
 								<Card.Content>
 									<View style={styles.headerCard}>
-										<Title>{a.nome}</Title>
-										<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: ids[index], txtOriginal: '' })}></IconButton>
+										<View style={{ flex: 0.85 }}>
+											<Title>{a.nome}</Title>
+										</View>
+										<View style={{ flex: 0.15 }}>
+											<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: ids[index], txtOriginal: '' })}></IconButton>
+										</View>
 									</View>
 								</Card.Content>
 							</Card>
@@ -469,7 +475,7 @@ function telaEstatIndividuais({ navigation }) {
 				alignContent: 'center',
 				alignItems: 'center',
 			}}>
-  				<Text>aqui ta foda</Text>
+  				<Text>gráfico de notas aqui eventualmente</Text>
 			</View>
 		);
 	}
