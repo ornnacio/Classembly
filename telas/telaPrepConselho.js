@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Card, Title, Paragraph, TextInput, FAB, IconButton } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
+import { IDContext } from "./context.js";
 import AwesomeAlert from 'react-native-awesome-alerts';
 import * as DocumentPicker from 'expo-document-picker';
 import * as WebBrowser from 'expo-web-browser';
@@ -35,6 +36,8 @@ function telaPrepConselho({ navigation }) {
 
 function telaImportarNotas({ navigation }) {
 
+	const idTurma = React.useContext(IDContext);
+	
 	async function openLink() {
 		WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});	
 	}
@@ -44,8 +47,43 @@ function telaImportarNotas({ navigation }) {
 		let doc = DocumentPicker.getDocumentAsync({
 			copyToCacheDirectory: false,
 		}).then(async p => {
-			const payloadJson = await FileSystem.readAsStringAsync(p.uri);
-			console.log((payloadJson));
+
+			const stringCSV = await FileSystem.readAsStringAsync(p.uri);
+			let arr = stringCSV.split('\n');
+			arr.pop();
+			var count = 0;
+
+			arr.forEach((linha, index) => {
+				let arr2 = linha.replace('/', '').split('","');
+
+				if(index == 0 || index == 1 || index == 2 || index == 3 || index == 4 || index == 5 || index == 6 || index == 7 || index == 8 || index == 9 || index == arr.length - 1){
+					//aqui é pra ignorar as linhas vazias
+				}else{
+					let obj = {
+						n1: arr2[3],
+						n2: arr2[4],
+						n3: arr2[5],
+						n4: arr2[6],
+						media: arr2[7]
+					}
+					count += 1;
+
+					firebase
+						.firestore()
+						.collection('turmas')
+						.doc(idTurma)
+						.collection('alunos')
+						.doc('a' + String(count).padStart(2, '0'))
+						.set({
+							n1: obj.n1,
+							n2: obj.n2,
+							n3: obj.n3,
+							n4: obj.n4,
+							media: obj.media
+						}, {merge: true});
+
+				}
+			})
 		});
 	}
 
