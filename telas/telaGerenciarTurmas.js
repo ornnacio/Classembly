@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
 import firebase from 'firebase';
 import 'firebase/firestore';
-import { DataTable, List, TextInput, FAB } from 'react-native-paper';
+import { DataTable, List, TextInput, FAB, IconButton } from 'react-native-paper';
 import ModalDropdown from 'react-native-modal-dropdown';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import { IDContext } from "./context.js";
@@ -19,54 +19,13 @@ let arrNome = [], arrComp = [], arrModo = [], arrAlunos = [];
 
 function telaGerenciarTurmas({route, navigation}){
 	
-	const [alunosDados1, setAlunosDados1] = React.useState([]);
-	const [alunosDados2, setAlunosDados2] = React.useState([]);
-	const [prontoDados, setProntoDados] = React.useState(false);
-	const idTurma = React.useContext(IDContext);
-	
-	useEffect(() => {
-	
-		async function getAlunos(){
-			
-			if(!prontoDados){
-				
-				arrNome = [];
-				arrComp = [];
-				arrModo = [];
-				
-				let doc = await firebase
-				.firestore()
-				.collection('turmas')
-				.doc(idTurma)
-				.collection('alunos')
-				.get()
-				.then((query) => {
-					
-					const list1 = [], list2 = [];
-					
-					query.forEach((doc) => {
-						list1.push(doc.data().nome);
-						list2.push(doc.data().id_aluno);
-					})
-					
-					setAlunosDados1(list1);
-					setAlunosDados2(list2);
-					setProntoDados(true);
-				})
-			}
-		}
-		
-		getAlunos();
-		
-	}, [])
-	
 	return(
 		<View style={styles.container}>
 			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("VisualizarTurma")}>
 				<Image style={styles.iconBotao} source={visualizarTurmas}/>
 				<Text style={styles.txtbotaohome}>Visualizar e Editar Parecer da Turma</Text>
 			</TouchableOpacity>
-			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("ComentáriosIndividuais", {nomes: alunosDados1, ids: alunosDados2})}>
+			<TouchableOpacity style={styles.butaoHome} onPress={() => navigation.navigate("ComentáriosIndividuais")}>
 				<Image style={styles.iconBotao} source={cadastrarEstatisticas} />
 				<Text style={styles.txtbotaohome}>Visualizar e Cadastrar Comentários Individuais</Text>
 			</TouchableOpacity>
@@ -259,67 +218,112 @@ class aluno {
 		this.comentarios = comentarios;
 		this.id = id;
 	}
-	
-	printComentarios(){
-		let s = '';
-		
-		if(this.comentarios.length != 0){
-			this.comentarios.forEach((c) => {
-				s = s + 'Comentário de ' + c.autor + ': ' + c.txt + '\n';
-			})
-		}else{
-			s = 'Nenhum comentário encontrado';
-		}
-		return s;
-	}
 }
 
 function telaComentarios({ route, navigation }){
 	
 	const [alunos, setAlunos] = React.useState([]);
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
+	const [nome, setNome] = useState('');
+	const [prontoEmail, setProntoEmail] = useState(false);
+	const [dummy, setDummy] = useState(0);
+	let currentUserUID = firebase.auth().currentUser.uid;
 	const idTurma = React.useContext(IDContext);
 	let width = 0.9 * Dimensions.get('window').width;
 	const isFocused = useIsFocused();
 	
 	useEffect(() => {
+
+		async function getUserInfo(){
+			
+			if(!prontoEmail){
+			
+				let doc = await firebase
+				.firestore()
+				.collection('users')
+				.doc(currentUserUID)
+				.get();
+
+				if (doc.exists){
+					let dataObj = doc.data();
+					setNome(dataObj.nome);
+					setProntoEmail(true);
+				}
+			}
+		}
+
+		getUserInfo();
 		
 		async function getComentarios(){
-			
+
 			arrAlunos = [];
 			
-			for(const [i, v] of route.params.nomes.entries()){
-				
-				firebase
-				.firestore()
+			firebase.firestore()
+				.collection('turmas')
+				.doc(idTurma)
 				.collection('alunos')
-				.doc(route.params.ids[i])
-				.collection('comentarios')
-				.get()
-				.then((query) => {
-					
-					const list = [];
-					
-					query.forEach((doc) => {
-						list.push(doc.data());
+				.onSnapshot((query) => {
+
+					var arrIds = [], arrNomes = [];
+
+					query.forEach((a) => {
+						arrIds.push(a.data().id_aluno);
+						arrNomes.push(a.data().nome)
 					})
 
-					const a = new aluno(v, list, route.params.ids[i]);
-					arrAlunos.push(a);
+					arrIds.forEach((item, index) => {
+
+						firebase.firestore()
+							.collection('alunos')
+							.doc(item)
+							.collection('comentarios')
+							.onSnapshot((query) => {
+
+								var arrComments = [];
+
+								query.forEach((c) => {
+
+									let obj = {
+										id: c.id,
+										autor: c.data().autor,
+										txt: c.data().txt
+									}
+
+									arrComments.push(obj);
+								})
+
+								let a = new aluno(arrNomes[index], arrComments, item);
+								arrAlunos.push(a);
+
+								if(arrAlunos.length === arrIds.length){
+									setAlunos(arrAlunos);
+									setProntoAlunos(true);
+								}
+								
+							})
+					})
 					
-					if((i+1) === route.params.nomes.length){
-						setAlunos(arrAlunos);
-						setProntoAlunos(true);
-					}
 				})
 				
-			}
 		}
 		
 		getComentarios();
 		
-	}, [isFocused])
-	
+	}, [isFocused, dummy]);
+
+	function deleteComentario(idC, idA){
+
+		firebase.firestore()
+			.collection('alunos')
+			.doc(idA)
+			.collection('comentarios')
+			.doc(idC)
+			.delete()
+			.then(() => {
+				setDummy(dummy + 1);
+			})
+	}
+
 	return(
 		<View style={styles.container}>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
@@ -328,12 +332,32 @@ function telaComentarios({ route, navigation }){
 						<ActivityIndicator size='large' color="#766ec5" />
 					}
 					{prontoAlunos && alunos.map((a, index) => {
-					
+
 						return(
 							<List.Section style={styles.listSection} key={index}>
 								<List.Accordion title={a.nome} style={{backgroundColor: '#d9d9d9'}}>
-									<Text style={{ marginBottom: 5, padding: 5 }}>{a.printComentarios()}</Text>
-									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios.length})}>
+									{a.comentarios.map(c => {
+										return(
+											<View style={{
+												flexDirection: 'row',
+												justifyContent: 'space-between',
+												alignItems: 'center',
+											}}>
+												<View style={{flex: 0.8}}>
+													<Text style={{
+														fontSize: 16,
+													}}>
+														<Text style={{fontWeight: 'bold'}}>{c.autor}:</Text> {c.txt}
+													</Text>
+												</View>
+												{c.autor === nome && <View style={{flex: 0.2, flexDirection: 'row', paddingRight: 10}}>
+													<IconButton icon="pencil" color="#534d8a" size={18} onPress={() => navigation.navigate("EditarComentário", {id: c.id, idAluno: a.id, txt: c.txt})}></IconButton>
+													<IconButton icon="delete" color="#534d8a" size={18} onPress={() => deleteComentario(c.id, a.id)}></IconButton>
+												</View>}
+											</View>
+										)
+									})}
+									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios[a.comentarios.length - 1].id})}>
 										<Text style={{ color: '#f4f9fc' }}>Adicionar novo comentário</Text>
 									</TouchableOpacity>
 								</List.Accordion>
@@ -354,7 +378,7 @@ function telaEscreverComentario({ route, navigation }){
 	const [showAlert, setShowAlert] = React.useState(false);
 	
 	let idAluno = route.params.id;
-	let lastC = route.params.lastC + 1;
+	let lastC = parseInt(route.params.lastC.split('c')[1]) + 1;
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const idTurma = React.useContext(IDContext);
 	
@@ -416,17 +440,43 @@ function telaEscreverComentario({ route, navigation }){
 				value={txt}
 				placeholder="Digite o comentário..."
 			/>
-			<AwesomeAlert
-				show={showAlert}
-				showProgress={false}
-				message="Comentário salvo com sucesso!"
-				closeOnTouchOutside={false}
-				closeOnHardwareBackPress={false}
-				showCancelButton={false}
-				showConfirmButton={true}
-				confirmText="Voltar"
-				confirmButtonColor="green"
-				onConfirmPressed={() => confirm()}
+			<FAB
+				style={styles.fab}
+				icon="content-save"
+				color="white"
+				onPress={() => press()}
+			/>
+		</View>
+	);
+}
+
+function telaEditarComentario({ route, navigation }){
+
+	const [txt, setTxt] = React.useState(route.params.txt);
+
+	function press(){
+
+		firebase
+		.firestore()
+		.collection('alunos')
+		.doc(route.params.idAluno)
+		.collection('comentarios')
+		.doc(route.params.id)
+		.update({
+			txt: txt,
+		});
+	}
+
+	return(
+		<View style={styles.container}>
+			<TextInput
+				style={styles.inputBox}
+				underlineColor='#766ec5'
+				multiline={true}
+				numberOfLines={6}
+				onChangeText={(text) => setTxt(text)}
+				value={txt}
+				placeholder="Digite o comentário..."
 			/>
 			<FAB
 				style={styles.fab}
@@ -469,6 +519,13 @@ export default function stackGerenciarTurmas({navigation}){
 				component={telaEscreverComentario} 
 				options={{
 					title: 'Escrever comentário'
+				}} 
+			/>
+			<Stack.Screen 
+				name={"EditarComentário"}
+				component={telaEditarComentario} 
+				options={{
+					title: 'Editar comentário'
 				}} 
 			/>
 		</Stack.Navigator>
