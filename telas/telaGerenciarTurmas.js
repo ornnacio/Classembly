@@ -1,12 +1,11 @@
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
 import firebase from 'firebase';
 import 'firebase/firestore';
-import { DataTable, List, TextInput, FAB, IconButton } from 'react-native-paper';
+import { DataTable, List, TextInput, FAB, IconButton, Portal, Dialog, Paragraph } from 'react-native-paper';
 import ModalDropdown from 'react-native-modal-dropdown';
-import AwesomeAlert from 'react-native-awesome-alerts';
 import { IDContext } from "./context.js";
 
 import visualizarTurmas from "./assets/visualizarTurmas.png";
@@ -17,7 +16,7 @@ const Stack = createStackNavigator();
 
 let arrNome = [], arrComp = [], arrModo = [], arrAlunos = [];
 
-function telaGerenciarTurmas({route, navigation}){
+function telaGerenciarTurmas({ navigation }){
 	
 	return(
 		<View style={styles.container}>
@@ -33,11 +32,13 @@ function telaGerenciarTurmas({route, navigation}){
 	);
 }
 
-function telaVisualizarTurma({navigation}){
+function telaVisualizarTurma({ navigation }){
 	
 	const [alunos, setAlunos] = React.useState([]);
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
-	const [showAlert, setShowAlert] = React.useState(false);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
+
 	const idTurma = React.useContext(IDContext);
 	let c = -1;
 	
@@ -75,6 +76,7 @@ function telaVisualizarTurma({navigation}){
 	async function press(){
 		
 		var erro = false;
+		setVisibleDialog1(true);
 		
 		for(var i = 0; i < alunos.length; i++){
 			
@@ -99,9 +101,14 @@ function telaVisualizarTurma({navigation}){
 		}
 		
 		if(!erro){
-			setShowAlert(true);
+			setVisibleDialog1(false);
+			setVisibleDialog2(true);
 		}
 		
+	}
+
+	function confirm() {
+		setVisibleDialog2(false);
 	}
 	
 	return(
@@ -152,7 +159,7 @@ function telaVisualizarTurma({navigation}){
 											textStyle={styles.txtDropdownBotao}
 											dropdownTextStyle={styles.txtDropdown}
 											dropdownStyle={{
-												height: 70
+												height: 100
 											}}
 											renderRightComponent={() => {
 												return(
@@ -172,7 +179,7 @@ function telaVisualizarTurma({navigation}){
 											textStyle={styles.txtDropdownBotao}
 											dropdownTextStyle={styles.txtDropdown}
 											dropdownStyle={{
-												height: 105
+												height: 150
 											}}
 											renderRightComponent={() => {
 												return(
@@ -187,18 +194,19 @@ function telaVisualizarTurma({navigation}){
 							);
 						})}
 					</DataTable>
-					<AwesomeAlert
-						show={showAlert}
-						showProgress={false}
-						message="Alterações salvas com sucesso!"
-						closeOnTouchOutside={true}
-						closeOnHardwareBackPress={true}
-						showCancelButton={false}
-						showConfirmButton={true}
-						confirmText="OK"
-						confirmButtonColor="green"
-						onConfirmPressed={() => {setShowAlert(false)}}
-					/>
+					<Portal>
+						<Dialog visible={visibleDialog1} dismissable={false}>
+							<Dialog.Content>
+								<ActivityIndicator size='large' color="#766ec5"/>
+								<Paragraph>Salvando...</Paragraph>
+							</Dialog.Content>
+						</Dialog>
+						<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+							<Dialog.Content>
+								<Paragraph>Alterações salvas com sucesso!</Paragraph>
+							</Dialog.Content>
+						</Dialog>
+					</Portal>
 				</View>
 			</ScrollView>
 			<FAB
@@ -226,6 +234,8 @@ function telaComentarios({ route, navigation }){
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
 	const [nome, setNome] = useState('');
 	const [prontoEmail, setProntoEmail] = useState(false);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 	const [dummy, setDummy] = useState(0);
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const idTurma = React.useContext(IDContext);
@@ -313,15 +323,42 @@ function telaComentarios({ route, navigation }){
 
 	function deleteComentario(idC, idA){
 
-		firebase.firestore()
-			.collection('alunos')
-			.doc(idA)
-			.collection('comentarios')
-			.doc(idC)
-			.delete()
-			.then(() => {
-				setDummy(dummy + 1);
-			})
+		Alert.alert(
+			"Deletar este comentário?",
+			null,
+			[
+			  	{
+					text: "Não",
+					onPress: () => {
+						
+					},
+			 	},
+			 	{ 
+					text: "Sim", 
+					onPress: () => {
+
+						setVisibleDialog1(true);
+
+						firebase.firestore()
+							.collection('alunos')
+							.doc(idA)
+							.collection('comentarios')
+							.doc(idC)
+							.delete()
+							.then(() => {
+								setDummy(dummy + 1);
+							})
+
+						setVisibleDialog1(false);
+						setVisibleDialog2(true);
+					} 
+				}
+			]
+		);
+	}
+	
+	function confirm(){
+		setVisibleDialog2(false);
 	}
 
 	return(
@@ -357,7 +394,7 @@ function telaComentarios({ route, navigation }){
 											</View>
 										)
 									})}
-									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios[a.comentarios.length - 1].id})}>
+									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios.length > 0 ? a.comentarios[a.comentarios.length - 1].id : 'c000'})}>
 										<Text style={{ color: '#f4f9fc' }}>Adicionar novo comentário</Text>
 									</TouchableOpacity>
 								</List.Accordion>
@@ -366,6 +403,19 @@ function telaComentarios({ route, navigation }){
 					})}
 				</View>
 			</ScrollView>
+			<Portal>
+				<Dialog visible={visibleDialog1} dismissable={false}>
+					<Dialog.Content>
+						<ActivityIndicator size='large' color="#766ec5"/>
+						<Paragraph>Removendo comentário...</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+				<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+					<Dialog.Content>
+						<Paragraph>Comentário removido com sucesso!</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+			</Portal>
 		</View>
 	);
 }
@@ -375,7 +425,8 @@ function telaEscreverComentario({ route, navigation }){
 	const [txt, setTxt] = React.useState('');
 	const [nome, setNome] = React.useState('');
 	const [prontoNome, setProntoNome] = React.useState(false);
-	const [showAlert, setShowAlert] = React.useState(false);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 	
 	let idAluno = route.params.id;
 	let lastC = parseInt(route.params.lastC.split('c')[1]) + 1;
@@ -396,6 +447,7 @@ function telaEscreverComentario({ route, navigation }){
 				if (doc.exists){
 					let dataObj = doc.data();
 					setNome(dataObj.nome);
+					setProntoNome(true);
 				}
 			}
 		}
@@ -405,6 +457,8 @@ function telaEscreverComentario({ route, navigation }){
 	}, []);
 	
 	function press(){
+
+		setVisibleDialog1(true);
 		
 		var idLast = String(lastC).padStart(3, '0')
 		let strAtual = 'c' + idLast;
@@ -420,13 +474,14 @@ function telaEscreverComentario({ route, navigation }){
 			autor: nome,
 		});
 		
-		setShowAlert(true);
+		setVisibleDialog1(false);
+		setVisibleDialog2(true);
 		
 	}
 	
 	function confirm(){
-		setShowAlert(false);
-		navigation.navigate('ComentáriosIndividuais');
+		setVisibleDialog2(false);
+		navigation.goBack();
 	}
 	
 	return(
@@ -446,6 +501,19 @@ function telaEscreverComentario({ route, navigation }){
 				color="white"
 				onPress={() => press()}
 			/>
+			<Portal>
+				<Dialog visible={visibleDialog1} dismissable={false}>
+					<Dialog.Content>
+						<ActivityIndicator size='large' color="#766ec5"/>
+						<Paragraph>Salvando comentário...</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+				<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+					<Dialog.Content>
+						<Paragraph>Comentário salvo com sucesso!</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+			</Portal>
 		</View>
 	);
 }
@@ -453,8 +521,12 @@ function telaEscreverComentario({ route, navigation }){
 function telaEditarComentario({ route, navigation }){
 
 	const [txt, setTxt] = React.useState(route.params.txt);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 
 	function press(){
+
+		setVisibleDialog1(true);
 
 		firebase
 		.firestore()
@@ -465,6 +537,14 @@ function telaEditarComentario({ route, navigation }){
 		.update({
 			txt: txt,
 		});
+
+		setVisibleDialog1(false);
+		setVisibleDialog2(true);
+	}
+
+	function confirm(){
+		setVisibleDialog2(false);
+		navigation.goBack();
 	}
 
 	return(
@@ -484,6 +564,19 @@ function telaEditarComentario({ route, navigation }){
 				color="white"
 				onPress={() => press()}
 			/>
+			<Portal>
+				<Dialog visible={visibleDialog1} dismissable={false}>
+					<Dialog.Content>
+						<ActivityIndicator size='large' color="#766ec5"/>
+						<Paragraph>Salvando comentário...</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+				<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+					<Dialog.Content>
+						<Paragraph>Comentário salvo com sucesso!</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+			</Portal>
 		</View>
 	);
 }

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator, Dim
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { FAB, Paragraph, Button } from 'react-native-paper';
+import { FAB, Paragraph, Button, Portal, Dialog } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
 import { logout } from "../firebase/firebaseMethods.js";
@@ -255,7 +255,7 @@ function telaSelectTurma(){
 	);
 }
 
-function telaAddTurma(){
+function telaAddTurma({ navigation }){
 
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const [email, setEmail] = useState('');
@@ -284,71 +284,6 @@ function telaAddTurma(){
 		getUserInfo();
 	})
 
-	async function openLink() {
-		WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});	
-	}
-
-	async function pickCSV() {
-
-		let doc = DocumentPicker.getDocumentAsync({
-			copyToCacheDirectory: false,
-		}).then(async p => { //CW: codigo ruim
-
-			const stringCSV = await FileSystem.readAsStringAsync(p.uri);
-			let arr = stringCSV.split('\n');
-			arr.pop();
-			let idTurma = null, nomeTurma = null, count = 0;
-
-			arr.forEach((linha, index) => {
-
-				let arr2 = linha.replace('/', '').split('","');
-
-				if(index == 0 || index == 1 || index == 3 || index == 4 || index == 5 || index == 6 || index == 7 || index == 8 || index == 9 || index == arr.length - 1){
-					//aqui é pra ignorar as linhas vazias
-				}else if(index == 2){
-					idTurma = arr2[1].split(' - ')[0];
-					nomeTurma = arr2[1].split(' - ')[1];
-					firebase
-						.firestore()
-						.collection('turmas')
-						.doc(idTurma)
-						.set({
-							nome: nomeTurma,
-							professor: email
-						});
-
-				}else{
-					let obj = {
-						matricula: arr2[1],
-						nome: arr2[2],
-					};
-					firebase
-						.firestore()
-						.collection('alunos')
-						.doc(obj.matricula)
-						.set({
-							nome: obj.nome
-						});
-					count += 1;
-					firebase
-						.firestore()
-						.collection('turmas')
-						.doc(idTurma)
-						.collection('alunos')
-						.doc('a' + String(count).padStart(2, '0'))
-						.set({
-							aprendizado: 'Auditivo',
-							comp: 'Participativo',
-							id_aluno: obj.matricula,
-							motivo_prio: null,
-							nome: obj.nome,
-							prio: false
-						})
-				}
-			});
-		});
-	}
-
 	const Instruções = () => {
 
 		return(
@@ -374,6 +309,84 @@ function telaAddTurma(){
 	}
 
 	const Conversor = () => {
+
+		const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+		const [visibleDialog2, setVisibleDialog2] = React.useState(false);
+
+		async function openLink() {
+			WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});	
+		}
+	
+		async function pickCSV() {
+	
+			setVisibleDialog1(true);
+
+			let doc = DocumentPicker.getDocumentAsync({
+				copyToCacheDirectory: false,
+			}).then(async p => { //CW: codigo ruim
+	
+				const stringCSV = await FileSystem.readAsStringAsync(p.uri);
+				let arr = stringCSV.split('\n');
+				arr.pop();
+				let idTurma = null, nomeTurma = null, count = 0;
+	
+				arr.forEach((linha, index) => {
+	
+					let arr2 = linha.replace('/', '').split('","');
+	
+					if(index == 0 || index == 1 || index == 3 || index == 4 || index == 5 || index == 6 || index == 7 || index == 8 || index == 9 || index == arr.length - 1){
+						//aqui é pra ignorar as linhas vazias
+					}else if(index == 2){
+						idTurma = arr2[1].split(' - ')[0];
+						nomeTurma = arr2[1].split(' - ')[1];
+						firebase
+							.firestore()
+							.collection('turmas')
+							.doc(idTurma)
+							.set({
+								nome: nomeTurma,
+								professor: email
+							});
+	
+					}else{
+						let obj = {
+							matricula: arr2[1],
+							nome: arr2[2],
+						};
+						firebase
+							.firestore()
+							.collection('alunos')
+							.doc(obj.matricula)
+							.set({
+								nome: obj.nome
+							});
+						count += 1;
+						firebase
+							.firestore()
+							.collection('turmas')
+							.doc(idTurma)
+							.collection('alunos')
+							.doc('a' + String(count).padStart(2, '0'))
+							.set({
+								aprendizado: 'Auditivo',
+								comp: 'Participativo',
+								id_aluno: obj.matricula,
+								motivo_prio: null,
+								nome: obj.nome,
+								prio: false
+							})
+					}
+				});
+
+				setVisibleDialog1(false);
+				setVisibleDialog2(true);
+			});
+		}
+
+		function confirm() {
+			setVisibleDialog2(false);
+			navigation.goBack();
+		}
 		
 		return(
 			<View style={styles.container}>
@@ -383,6 +396,19 @@ function telaAddTurma(){
 				<TouchableOpacity onPress={() => pickCSV()} style={styles.butaoHomePuro}>
 					<Text style={styles.txtbotaohomePuro}>Selecionar CSV</Text>
 				</TouchableOpacity>
+				<Portal>
+					<Dialog visible={visibleDialog1} dismissable={false}>
+						<Dialog.Content>
+							<ActivityIndicator size='large' color="#766ec5"/>
+							<Paragraph>Adicionando turma...</Paragraph>
+						</Dialog.Content>
+					</Dialog>
+					<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+						<Dialog.Content>
+							<Paragraph>Turma adicionada com sucesso!</Paragraph>
+						</Dialog.Content>
+					</Dialog>
+				</Portal>
 			</View>
 		);
 	}

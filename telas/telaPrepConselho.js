@@ -2,7 +2,7 @@ import React, { useState, state, Component, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
-import { Card, Title, Paragraph, TextInput, FAB, IconButton } from 'react-native-paper';
+import { Card, Title, Paragraph, TextInput, FAB, IconButton, Portal, Dialog } from 'react-native-paper';
 import firebase from 'firebase';
 import "firebase/firestore";
 import { IDContext } from "./context.js";
@@ -37,55 +37,6 @@ function telaPrepConselho({ navigation }) {
 function telaImportarNotas({ navigation }) {
 
 	const idTurma = React.useContext(IDContext);
-	
-	async function openLink() {
-		WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});	
-	}
-
-	async function pickCSV() {
-
-		let doc = DocumentPicker.getDocumentAsync({
-			copyToCacheDirectory: false,
-		}).then(async p => {
-
-			const stringCSV = await FileSystem.readAsStringAsync(p.uri);
-			let arr = stringCSV.split('\n');
-			arr.pop();
-			var count = 0;
-
-			arr.forEach((linha, index) => {
-				let arr2 = linha.replace('/', '').split('","');
-
-				if(index == 0 || index == 1 || index == 2 || index == 3 || index == 4 || index == 5 || index == 6 || index == 7 || index == 8 || index == 9 || index == arr.length - 1){
-					//aqui é pra ignorar as linhas vazias
-				}else{
-					let obj = {
-						n1: arr2[3],
-						n2: arr2[4],
-						n3: arr2[5],
-						n4: arr2[6],
-						media: arr2[7]
-					}
-					count += 1;
-
-					firebase
-						.firestore()
-						.collection('turmas')
-						.doc(idTurma)
-						.collection('alunos')
-						.doc('a' + String(count).padStart(2, '0'))
-						.set({
-							n1: obj.n1,
-							n2: obj.n2,
-							n3: obj.n3,
-							n4: obj.n4,
-							media: obj.media
-						}, {merge: true});
-
-				}
-			})
-		});
-	}
 
 	const Instruções = () => {
 
@@ -112,6 +63,68 @@ function telaImportarNotas({ navigation }) {
 	}
 
 	const Conversor = () => {
+
+		const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+		const [visibleDialog2, setVisibleDialog2] = React.useState(false);
+
+		async function openLink() {
+			WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});	
+		}
+
+		async function pickCSV() {
+
+			setVisibleDialog1(true);
+	
+			let doc = DocumentPicker.getDocumentAsync({
+				copyToCacheDirectory: false,
+			}).then(async p => {
+	
+				const stringCSV = await FileSystem.readAsStringAsync(p.uri);
+				let arr = stringCSV.split('\n');
+				arr.pop();
+				var count = 0;
+	
+				arr.forEach((linha, index) => {
+					let arr2 = linha.replace('/', '').split('","');
+	
+					if(index == 0 || index == 1 || index == 2 || index == 3 || index == 4 || index == 5 || index == 6 || index == 7 || index == 8 || index == 9 || index == arr.length - 1){
+						//aqui é pra ignorar as linhas vazias
+					}else{
+						let obj = {
+							n1: arr2[3],
+							n2: arr2[4],
+							n3: arr2[5],
+							n4: arr2[6],
+							media: arr2[7]
+						}
+						count += 1;
+	
+						firebase
+							.firestore()
+							.collection('turmas')
+							.doc(idTurma)
+							.collection('alunos')
+							.doc('a' + String(count).padStart(2, '0'))
+							.set({
+								n1: obj.n1,
+								n2: obj.n2,
+								n3: obj.n3,
+								n4: obj.n4,
+								media: obj.media
+							}, {merge: true});
+	
+					}
+				});
+	
+				setVisibleDialog1(false);
+				setVisibleDialog2(true);
+			});
+		}
+	
+		function confirm() {
+			setVisibleDialog2(false);
+			navigation.goBack();
+		}
 		
 		return(
 			<View style={styles.container}>
@@ -121,6 +134,19 @@ function telaImportarNotas({ navigation }) {
 				<TouchableOpacity onPress={() => pickCSV()} style={styles.butaoHomePuro}>
 					<Text style={styles.txtbotaohomePuro}>Selecionar CSV</Text>
 				</TouchableOpacity>
+				<Portal>
+					<Dialog visible={visibleDialog1} dismissable={false}>
+						<Dialog.Content>
+							<ActivityIndicator size='large' color="#766ec5"/>
+							<Paragraph>Salvando notas...</Paragraph>
+						</Dialog.Content>
+					</Dialog>
+					<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+						<Dialog.Content>
+							<Paragraph>Notas salvas com sucesso!</Paragraph>
+						</Dialog.Content>
+					</Dialog>
+				</Portal>
 			</View>
 		);
 	}
@@ -140,10 +166,12 @@ function telaAutoAval({ navigation }) {
 	const [avalArr, setAvalArr] = useState([]);
 	const [arrIds, setArrIds] = useState([]);
 	const [prontoAval, setProntoAval] = useState(false);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 	let currentUserUID = firebase.auth().currentUser.uid;
 	let lastAval = 0;
-	var teste = -1;
-	var arrTeste = [];
+	var count = -1;
+	var arr = [];
 	let width = 0.9 * Dimensions.get('window').width;
 
 	useEffect(() => {
@@ -177,13 +205,42 @@ function telaAutoAval({ navigation }) {
 
 	function deleteAval(id){
 
-		firebase
-			.firestore()
-			.collection('users')
-			.doc(currentUserUID)
-			.collection('autoaval')
-			.doc(id)
-			.delete()
+		Alert.alert(
+			"Deletar autoavaliação?",
+			null,
+			[
+			  	{
+					text: "Não",
+					onPress: () => {
+						
+					},
+			 	},
+			 	{ 
+					text: "Sim", 
+					onPress: () => {
+
+						setVisibleDialog1(true);
+
+						firebase
+							.firestore()
+							.collection('users')
+							.doc(currentUserUID)
+							.collection('autoaval')
+							.doc(id)
+							.delete()
+
+						setVisibleDialog1(false);
+						setVisibleDialog2(true);
+
+					} 
+				}
+			]
+		);
+
+	}
+
+	function confirm() {
+		setVisibleDialog2(false);
 	}
 
 	return (
@@ -195,24 +252,22 @@ function telaAutoAval({ navigation }) {
 					}
 					{prontoAval && avalArr.map((a, index) => {
 
-						teste++;
+						count++;
 
-						if((teste % avalArr.length) == avalArr.length - 1){
-							lastAval = arrIds[teste % avalArr.length];
+						if((count % avalArr.length) == avalArr.length - 1){
+							lastAval = arrIds[count % avalArr.length];
 						}
 
-						arrTeste[teste] = arrIds[teste % avalArr.length];
-
-						console.log(arrTeste);
+						arr[count] = arrIds[count % avalArr.length];
 
 						return (
-							<Card style={styles.cardAutoAval} key={teste % avalArr.length} idTeste={arrIds[teste % avalArr.length]}>
+							<Card style={styles.cardAutoAval} key={count % avalArr.length} idTeste={arrIds[count % avalArr.length]}>
 								<Card.Content>
 									<View style={styles.headerCard}>
 										<Title>Autoavaliação {a.data}</Title>
 										<View style={{ flexDirection: "row" }}>
-											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EditarAutoAval", { txt: a.txt, id: arrTeste[index]})}></IconButton>
-											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deleteAval(arrTeste[index])}></IconButton>
+											<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EditarAutoAval", { txt: a.txt, id: arr[index]})}></IconButton>
+											<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deleteAval(arr[index])}></IconButton>
 										</View>
 									</View>
 									<Paragraph>{a.txt}</Paragraph>
@@ -228,16 +283,29 @@ function telaAutoAval({ navigation }) {
 				color="white"
 				onPress={() => navigation.navigate("EscreverAutoAval", { lastAval })}
 			/>
+			<Portal>
+				<Dialog visible={visibleDialog1} dismissable={false}>
+					<Dialog.Content>
+						<ActivityIndicator size='large' color="#766ec5"/>
+						<Paragraph>Excluindo autoavaliação...</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+				<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+					<Dialog.Content>
+						<Paragraph>Autoavaliação removida com sucesso!</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+			</Portal>
 		</View>
 	);
 }
 
-function telaEscreverAutoAval({ route }) {
+function telaEscreverAutoAval({ route, navigation }) {
 
 	const [txt, setTxt] = React.useState('');
-	const [showAlert, setShowAlert] = React.useState(false);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 	let currentUserUID = firebase.auth().currentUser.uid;
-	const navigation = useNavigation();
 
 	var today = new Date();
 	var d = String(today.getDate()).padStart(2, '0');
@@ -245,6 +313,7 @@ function telaEscreverAutoAval({ route }) {
 
 	function press() {
 
+		setVisibleDialog1(true);
 		let numberId = String((parseInt(route.params.lastAval.split('aa')[1]) + 1)).padStart(2, '0');
 		let strId = 'aa' + numberId;
 		let strData = d + '/' + m;
@@ -260,14 +329,14 @@ function telaEscreverAutoAval({ route }) {
 				data: strData,
 			});
 
-		setShowAlert(true);
+		setVisibleDialog1(false);
+		setVisibleDialog2(true);
 
 	}
 
 	function confirm() {
-		setTxt('');
-		setShowAlert(false);
-		navigation.navigate('AutoAval');
+		setVisibleDialog2(false);
+		navigation.goBack();
 	}
 
 	return (
@@ -287,18 +356,19 @@ function telaEscreverAutoAval({ route }) {
 				color="white"
 				onPress={() => press()}
 			/>
-			<AwesomeAlert
-				show={showAlert}
-				showProgress={false}
-				message="Autoavaliação salva com sucesso!"
-				closeOnTouchOutside={false}
-				closeOnHardwareBackPress={false}
-				showCancelButton={false}
-				showConfirmButton={true}
-				confirmText="Voltar"
-				confirmButtonColor="green"
-				onConfirmPressed={() => confirm()}
-			/>
+			<Portal>
+				<Dialog visible={visibleDialog1} dismissable={false}>
+					<Dialog.Content>
+						<ActivityIndicator size='large' color="#766ec5"/>
+						<Paragraph>Salvando autoavaliação...</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+				<Dialog visible={visibleDialog2} onDismiss={() => confirm()}>
+					<Dialog.Content>
+						<Paragraph>Autoavaliação salva com sucesso!</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+			</Portal>
 		</View>
 	);
 }
@@ -306,14 +376,16 @@ function telaEscreverAutoAval({ route }) {
 function telaEditarAutoAval({ route }) {
 
 	const [txt, setTxt] = React.useState(route.params.txt);
-	const [showAlert, setShowAlert] = React.useState(false);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 	let idAval = route.params.id;
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const navigation = useNavigation();
 
-	console.log(route.params.id);
-
 	function press(){
+
+		setVisibleDialog1(true);
+
 		firebase
 			.firestore()
 			.collection('users')
@@ -324,12 +396,13 @@ function telaEditarAutoAval({ route }) {
 				txt: txt,
 			});
 
-		setShowAlert(true);
+		setVisibleDialog1(false);
+		setVisibleDialog2(true);
 	}
 
 	function confirm() {
 		setTxt('');
-		setShowAlert(false);
+		setVisibleDialog2(false);
 		navigation.navigate('AutoAval');
 	}
 
@@ -350,18 +423,19 @@ function telaEditarAutoAval({ route }) {
 				color="white"
 				onPress={() => press()}
 			/>
-			<AwesomeAlert
-				show={showAlert}
-				showProgress={false}
-				message="Autoavaliação salva com sucesso!"
-				closeOnTouchOutside={false}
-				closeOnHardwareBackPress={false}
-				showCancelButton={false}
-				showConfirmButton={true}
-				confirmText="Voltar"
-				confirmButtonColor="green"
-				onConfirmPressed={() => confirm()}
-			/>
+			<Portal>
+				<Dialog visible={visibleDialog1} dismissable={false}>
+					<Dialog.Content>
+						<ActivityIndicator size='large' color="#766ec5"/>
+						<Paragraph>Salvando autoavaliação...</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+				<Dialog visible={visibleDialog2} onDismiss={() => confirm()}>
+					<Dialog.Content>
+						<Paragraph>Autoavaliação salva com sucesso!</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+			</Portal>
 		</View>
 	);
 }

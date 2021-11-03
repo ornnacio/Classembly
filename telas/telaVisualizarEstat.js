@@ -1,9 +1,8 @@
 import React, { useState, state, Component, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
-import { FAB, Card, Title, Paragraph, IconButton, TextInput } from 'react-native-paper';
-import AwesomeAlert from 'react-native-awesome-alerts';
+import { FAB, Card, Title, Paragraph, IconButton, TextInput, Portal, Dialog } from 'react-native-paper';
 import firebase from 'firebase';
 import 'firebase/firestore';
 import { IDContext } from "./context.js";
@@ -44,7 +43,9 @@ function telaEstudantesPrio({ route, navigation }) {
 	const [alunosDisp, setAlunosDisp] = React.useState([]);
 	const [alunosDispId, setAlunosDispId] = React.useState([]);
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
-	const [showAlert, setShowAlert] = React.useState(false);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
+	
 	let vazio = true;
 	const isFocused = useIsFocused();
 	const idTurma = React.useContext(IDContext);
@@ -90,29 +91,48 @@ function telaEstudantesPrio({ route, navigation }) {
 
 	function deletar(id) {
 
-		let erro = false;
+		Alert.alert(
+			"Remover esse aluno?",
+			null,
+			[
+			  	{
+					text: "Não",
+					onPress: () => {
+						
+					},
+			 	},
+			 	{ 
+					text: "Sim", 
+					onPress: () => {
 
-		try {
-			firebase
-				.firestore()
-				.collection('turmas')
-				.doc(idTurma)
-				.collection('alunos')
-				.doc(id)
-				.update({
-					prio: false,
-					motivo_prio: null
-				});
-		} catch (e) {
-			alert(e.message);
-			erro = true;
-		}
+						setVisibleDialog1(true);
 
-		!erro ? setShowAlert(true) : setShowAlert(false);
+						try {
+							firebase
+								.firestore()
+								.collection('turmas')
+								.doc(idTurma)
+								.collection('alunos')
+								.doc(id)
+								.update({
+									prio: false,
+									motivo_prio: null
+								});
+						} catch (e) {
+							alert(e.message);
+						}
+
+						setVisibleDialog1(false);
+						setVisibleDialog2(true);
+
+					} 
+				}
+			]
+		);
 	}
 
 	function confirm() {
-		setShowAlert(false);
+		setVisibleDialog2(false);
 	}
 
 	return (
@@ -157,18 +177,19 @@ function telaEstudantesPrio({ route, navigation }) {
 				color="white"
 				onPress={() => navigation.navigate("AddEstudantePrio", { alunos: alunosDisp, ids: alunosDispId })}
 			/>
-			<AwesomeAlert
-				show={showAlert}
-				showProgress={false}
-				message="Aluno removido com sucesso!"
-				closeOnTouchOutside={false}
-				closeOnHardwareBackPress={false}
-				showCancelButton={false}
-				showConfirmButton={true}
-				confirmText="Voltar"
-				confirmButtonColor="green"
-				onConfirmPressed={() => confirm()}
-			/>
+			<Portal>
+				<Dialog visible={visibleDialog1} dismissable={false}>
+					<Dialog.Content>
+						<ActivityIndicator size='large' color="#766ec5"/>
+						<Paragraph>Removendo aluno...</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+				<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+					<Dialog.Content>
+						<Paragraph>Aluno removido com sucesso!</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+			</Portal>
 		</View>
 	);
 }
@@ -210,12 +231,13 @@ function adicionarEstudantePrio({ route, navigation }) {
 function escreverMotivo({ route, navigation }) {
 
 	const [txt, setTxt] = React.useState(route.params.txtOriginal);
-	const [showAlert, setShowAlert] = React.useState(false);
+	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
+	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 	const idTurma = React.useContext(IDContext);
 
 	function press() {
 
-		let erro = false;
+		setVisibleDialog1(true);
 
 		try {
 			firebase
@@ -230,16 +252,15 @@ function escreverMotivo({ route, navigation }) {
 				});
 		} catch (e) {
 			alert(e.message);
-			erro = true;
 		}
 
-		!erro ? setShowAlert(true) : setShowAlert(false);
+		setVisibleDialog1(false);
+		setVisibleDialog2(true);
 	}
 
 	function confirm() {
-
 		setTxt('');
-		setShowAlert(false);
+		setVisibleDialog2(false);
 		navigation.navigate('EstudantesPrio');
 	}
 
@@ -260,18 +281,19 @@ function escreverMotivo({ route, navigation }) {
 				color="white"
 				onPress={() => press()}
 			/>
-			<AwesomeAlert
-				show={showAlert}
-				showProgress={false}
-				message="Motivo salvo com sucesso!"
-				closeOnTouchOutside={false}
-				closeOnHardwareBackPress={false}
-				showCancelButton={false}
-				showConfirmButton={true}
-				confirmText="Voltar"
-				confirmButtonColor="green"
-				onConfirmPressed={() => confirm()}
-			/>
+			<Portal>
+				<Dialog visible={visibleDialog1} dismissable={false}>
+					<Dialog.Content>
+						<ActivityIndicator size='large' color="#766ec5"/>
+						<Paragraph>Salvando motivo...</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+				<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+					<Dialog.Content>
+						<Paragraph>Motivo salvo com sucesso!</Paragraph>
+					</Dialog.Content>
+				</Dialog>
+			</Portal>
 		</View>
 	);
 }
@@ -727,7 +749,7 @@ const styles = StyleSheet.create({
 	},
 
 	txtAviso: {
-		fontSize: 18,
+		fontSize: 16,
 		color: '#1f1f1f'
 	},
 
