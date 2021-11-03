@@ -9,13 +9,13 @@ import 'firebase/firestore';
 import { IDContext } from "./context.js";
 import PieChart from 'react-native-pie-chart';
 import { Pages } from 'react-native-pages';
+import { VictoryBar, VictoryChart, VictoryLabel } from "victory-native";
 
 import alunosPrioridade from "./assets/alunosPrioridade.png";
 import estatIndividuais from "./assets/estatIndividuais.png";
 import estatComparadas from "./assets/estatComparadas.png";
 
 const Stack = createStackNavigator();
-var refresh = false;
 
 function telaVisualizarEstat({ navigation }) {
 
@@ -282,6 +282,10 @@ function telaEstatIndividuais({ navigation }) {
 	const [alunos, setAlunos] = React.useState([]);
 	const [dataAprendizado, setDataAprendizado] = React.useState([1, 1, 1]);
 	const [dataComportamento, setDataComportamento] = React.useState([1, 1]);
+	const [av1, setAv1] = useState([]);
+	const [av2, setAv2] = useState([]);
+	const [av3, setAv3] = useState([]);
+	const [av4, setAv4] = useState([]);
 	const idTurma = React.useContext(IDContext);
 	const sliceColor1 = ['#918bd1','#ada8dc','#c8c5e8'];
 	const sliceColor2 = ['#918bd1','#ada8dc'];
@@ -299,9 +303,14 @@ function telaEstatIndividuais({ navigation }) {
 					.collection('alunos')
 					.onSnapshot((query) => {
 
-						const list = [], contadores1 = [0, 0, 0], contadores2 = [0, 0];
+						const list = [], contadores1 = [0, 0, 0], contadores2 = [0, 0], 
+							tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+							tempAv2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+							tempAv3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+							tempAv4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 						query.forEach((doc) => {
+
 							list.push(doc.data());
 
 							if(doc.data().aprendizado == 'Auditivo'){
@@ -312,9 +321,74 @@ function telaEstatIndividuais({ navigation }) {
 								contadores1[2] += 1;
 							}
 
+							tempAv1[parseInt(doc.data().n1)] += 1;
+							tempAv2[parseInt(doc.data().n2)] += 1;
+							tempAv3[parseInt(doc.data().n3)] += 1;
+							tempAv4[parseInt(doc.data().n4)] += 1;
+
 							doc.data().comp == 'Participativo' ? contadores2[0]++ : contadores2[1]++;
 						})
 
+						var data1 = [
+							{ nota: 1, qntd: tempAv1[0] },
+							{ nota: 2, qntd: tempAv1[1] },
+							{ nota: 3, qntd: tempAv1[2] },
+							{ nota: 4, qntd: tempAv1[3] },
+							{ nota: 5, qntd: tempAv1[4] },
+							{ nota: 6, qntd: tempAv1[5] },
+							{ nota: 7, qntd: tempAv1[6] },
+							{ nota: 8, qntd: tempAv1[7] },
+							{ nota: 9, qntd: tempAv1[8] },
+							{ nota: 10, qntd: tempAv1[9] },
+							{ nota: 11, qntd: tempAv1[10] },
+						];
+
+						var data2 = [
+							{ nota: 1, qntd: tempAv2[0] },
+							{ nota: 2, qntd: tempAv2[1] },
+							{ nota: 3, qntd: tempAv2[2] },
+							{ nota: 4, qntd: tempAv2[3] },
+							{ nota: 5, qntd: tempAv2[4] },
+							{ nota: 6, qntd: tempAv2[5] },
+							{ nota: 7, qntd: tempAv2[6] },
+							{ nota: 8, qntd: tempAv2[7] },
+							{ nota: 9, qntd: tempAv2[8] },
+							{ nota: 10, qntd: tempAv2[9] },
+							{ nota: 11, qntd: tempAv2[10] },
+						];
+
+						var data3 = [
+							{ nota: 1, qntd: tempAv3[0] },
+							{ nota: 2, qntd: tempAv3[1] },
+							{ nota: 3, qntd: tempAv3[2] },
+							{ nota: 4, qntd: tempAv3[3] },
+							{ nota: 5, qntd: tempAv3[4] },
+							{ nota: 6, qntd: tempAv3[5] },
+							{ nota: 7, qntd: tempAv3[6] },
+							{ nota: 8, qntd: tempAv3[7] },
+							{ nota: 9, qntd: tempAv3[8] },
+							{ nota: 10, qntd: tempAv3[9] },
+							{ nota: 11, qntd: tempAv3[10] },
+						];
+
+						var data4 = [
+							{ nota: 1, qntd: tempAv4[0] },
+							{ nota: 2, qntd: tempAv4[1] },
+							{ nota: 3, qntd: tempAv4[2] },
+							{ nota: 4, qntd: tempAv4[3] },
+							{ nota: 5, qntd: tempAv4[4] },
+							{ nota: 6, qntd: tempAv4[5] },
+							{ nota: 7, qntd: tempAv4[6] },
+							{ nota: 8, qntd: tempAv4[7] },
+							{ nota: 9, qntd: tempAv4[8] },
+							{ nota: 10, qntd: tempAv4[9] },
+							{ nota: 11, qntd: tempAv4[10] },
+						];
+
+						setAv1(data1);
+						setAv2(data2);
+						setAv3(data3);
+						setAv4(data4);
 						setAlunos(list);
 						setDataAprendizado(contadores1);
 						setDataComportamento(contadores2);
@@ -351,22 +425,27 @@ function telaEstatIndividuais({ navigation }) {
 				</View>
 				<View style={{
 					flex: 0.8,
-					marginTop: 30,
+					padding: 10
 				}}>
-					<PieChart
-						widthAndHeight={0.8 * Dimensions.get('window').width}
-						series={dataAprendizado}
-						sliceColor={sliceColor1}
-					/>
 					<View style={{
+						flex: 0.7,
+						justifyContent: 'center',  
+						alignItems: 'center',
+					}}>
+						<PieChart
+							widthAndHeight={0.6 * Dimensions.get('window').width}
+							series={dataAprendizado}
+							sliceColor={sliceColor1}
+						/>
+					</View>
+					<View style={{
+						flex: 0.3,
 						justifyContent: 'center', 
 						textAlign: 'center', 
 						alignItems: 'center', 
-						marginTop: 30,
 						borderColor: '#766ec5',
 						borderWidth: 1,
 						borderRadius: 5,
-						padding: 10
 					}}>
 						<View style={{flexDirection: 'row', alignItems: 'center'}}>
 							<View style={{
@@ -425,22 +504,28 @@ function telaEstatIndividuais({ navigation }) {
 				</View>
 				<View style={{
 					flex: 0.8,
-					marginTop: 30,
+					padding: 10
 				}}>
-					<PieChart
-						widthAndHeight={0.8 * Dimensions.get('window').width}
-						series={dataComportamento}
-						sliceColor={sliceColor2}
-					/>
 					<View style={{
+						flex: 0.7,
+						justifyContent: 'center',  
+						alignItems: 'center',
+					}}>
+						<PieChart
+							widthAndHeight={0.6 * Dimensions.get('window').width}
+							series={dataComportamento}
+							sliceColor={sliceColor2}
+						/>
+					</View>
+					<View style={{
+						flex: 0.3,
 						justifyContent: 'center', 
 						textAlign: 'center', 
 						alignItems: 'center', 
-						marginTop: 30,
 						borderColor: '#766ec5',
 						borderWidth: 1,
 						borderRadius: 5,
-						padding: 10
+						padding: 5
 					}}>
 						<View style={{flexDirection: 'row', alignItems: 'center'}}>
 							<View style={{
@@ -469,14 +554,71 @@ function telaEstatIndividuais({ navigation }) {
 	let GraficoNotas = () => {
 
 		return(
-			<View style={{
-				flex: 1,
-				justifyContent: 'center',
-				alignContent: 'center',
-				alignItems: 'center',
-			}}>
-  				<Text>gráfico de notas aqui eventualmente</Text>
-			</View>
+			<ScrollView contentContainerStyle={styles.containerScroll}>
+				<View style={{
+					flex: 1,
+					justifyContent: 'center',
+					alignContent: 'center',
+					alignItems: 'center',
+				}}>
+					<VictoryChart 
+						width={Dimensions.get('window').width - 5}
+					>
+						<VictoryBar 
+							data={av1} 
+							x="nota" y="qntd" 
+							style={{ data: {fill: '#766ec5'} }} 
+							alignment="start"
+							barRatio={1.05}
+							categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+							labels={({ datum }) => datum.qntd}
+							labelComponent={<VictoryLabel dx={10} />}
+						/>
+					</VictoryChart>
+					<VictoryChart 
+						width={Dimensions.get('window').width - 5}
+					>
+						<VictoryBar 
+							data={av2} 
+							x="nota" y="qntd" 
+							style={{ data: {fill: '#766ec5'} }} 
+							alignment="start"
+							barRatio={1.05}
+							categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+							labels={({ datum }) => datum.qntd}
+							labelComponent={<VictoryLabel dx={10} />}
+						/>
+					</VictoryChart>
+					<VictoryChart 
+						width={Dimensions.get('window').width - 5}
+					>
+						<VictoryBar 
+							data={av3} 
+							x="nota" y="qntd" 
+							style={{ data: {fill: '#766ec5'} }} 
+							alignment="start"
+							barRatio={1.05}
+							categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+							labels={({ datum }) => datum.qntd}
+							labelComponent={<VictoryLabel dx={10} />}
+						/>
+					</VictoryChart>
+					<VictoryChart 
+						width={Dimensions.get('window').width - 5}
+					>
+						<VictoryBar 
+							data={av4} 
+							x="nota" y="qntd" 
+							style={{ data: {fill: '#766ec5'} }} 
+							alignment="start"
+							barRatio={1.05}
+							categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+							labels={({ datum }) => datum.qntd}
+							labelComponent={<VictoryLabel dx={10} />}
+						/>
+					</VictoryChart>
+				</View>
+			</ScrollView>
 		);
 	}
 
