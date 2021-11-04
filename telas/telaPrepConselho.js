@@ -172,7 +172,7 @@ function telaAutoAval({ navigation }) {
 	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
 	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 	let currentUserUID = firebase.auth().currentUser.uid;
-	let lastAval = 0;
+	let lastAval = 'aa00';
 	var count = -1;
 	var arr = [];
 	let width = 0.9 * Dimensions.get('window').width;
@@ -252,6 +252,9 @@ function telaAutoAval({ navigation }) {
 				<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
 					{!prontoAval &&
 						<ActivityIndicator size='large' color="#766ec5" />
+					}
+					{prontoAval && avalArr.length == 0 && 
+						<Paragraph>Nenhuma autoavaliação salva.</Paragraph>
 					}
 					{prontoAval && avalArr.map((a, index) => {
 
