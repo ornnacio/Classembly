@@ -156,7 +156,7 @@ function telaEstudantesPrio({ route, navigation }) {
 												<Title>{a.nome}</Title>
 											</View>
 											<View style={{ flex: 0.3, flexDirection: "row" }}>
-												<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio })}></IconButton>
+												<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio, nome: a.nome })}></IconButton>
 												<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deletar(alunosId[index])}></IconButton>
 											</View>
 										</View>
@@ -212,7 +212,7 @@ function adicionarEstudantePrio({ route, navigation }) {
 											<Title>{a.nome}</Title>
 										</View>
 										<View style={{ flex: 0.15 }}>
-											<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: ids[index], txtOriginal: '' })}></IconButton>
+											<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: ids[index], txtOriginal: '', nome: a.nome })}></IconButton>
 										</View>
 									</View>
 								</Card.Content>
@@ -266,6 +266,7 @@ function escreverMotivo({ route, navigation }) {
 
 	return (
 		<View style={styles.container}>
+			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever motivo da prioridade de {route.params.nome}</Text>
 			<TextInput
 				style={styles.inputBox}
 				underlineColor='#766ec5'

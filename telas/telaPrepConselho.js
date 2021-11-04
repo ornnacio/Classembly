@@ -347,6 +347,7 @@ function telaEscreverAutoAval({ route, navigation }) {
 
 	return (
 		<View style={styles.container}>
+			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever autoavaliação</Text>
 			<TextInput
 				style={styles.inputBox}
 				underlineColor='#766ec5'
@@ -414,6 +415,7 @@ function telaEditarAutoAval({ route }) {
 
 	return (
 		<View style={styles.container}>
+			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever autoavaliação</Text>
 			<TextInput
 				style={styles.inputBox}
 				underlineColor='#766ec5'

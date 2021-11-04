@@ -380,21 +380,21 @@ function telaComentarios({ route, navigation }){
 												justifyContent: 'space-between',
 												alignItems: 'center',
 											}}>
-												<View style={{flex: 0.8}}>
+												<View style={{flex: c.autor === nome ? 0.8 : 1}}>
 													<Text style={{
 														fontSize: 16,
 													}}>
 														<Text style={{fontWeight: 'bold'}}>{c.autor}:</Text> {c.txt}
 													</Text>
 												</View>
-												{c.autor === nome && <View style={{flex: 0.2, flexDirection: 'row', paddingRight: 10}}>
-													<IconButton icon="pencil" color="#534d8a" size={18} onPress={() => navigation.navigate("EditarComentário", {id: c.id, idAluno: a.id, txt: c.txt})}></IconButton>
+												{c.autor === nome && <View style={{flex: c.autor === nome ? 0.2 : 0, flexDirection: 'row', paddingRight: 10}}>
+													<IconButton icon="pencil" color="#534d8a" size={18} onPress={() => navigation.navigate("EditarComentário", {id: c.id, idAluno: a.id, txt: c.txt, nome: a.nome})}></IconButton>
 													<IconButton icon="delete" color="#534d8a" size={18} onPress={() => deleteComentario(c.id, a.id)}></IconButton>
 												</View>}
 											</View>
 										)
 									})}
-									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios.length > 0 ? a.comentarios[a.comentarios.length - 1].id : 'c000'})}>
+									<TouchableOpacity style={styles.botaoAddComentario} onPress={() => navigation.navigate("EscreverComentário", {id: a.id, lastC: a.comentarios.length > 0 ? a.comentarios[a.comentarios.length - 1].id : 'c000', nome: a.nome})}>
 										<Text style={{ color: '#f4f9fc' }}>Adicionar novo comentário</Text>
 									</TouchableOpacity>
 								</List.Accordion>
@@ -486,6 +486,7 @@ function telaEscreverComentario({ route, navigation }){
 	
 	return(
 		<View style={styles.container}>
+			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever comentário sobre {route.params.nome}</Text>
 			<TextInput
 				style={styles.inputBox}
 				underlineColor='#766ec5'
@@ -549,6 +550,7 @@ function telaEditarComentario({ route, navigation }){
 
 	return(
 		<View style={styles.container}>
+			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever comentário sobre {route.params.nome}</Text>
 			<TextInput
 				style={styles.inputBox}
 				underlineColor='#766ec5'
