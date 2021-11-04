@@ -426,11 +426,7 @@ function telaEstatIndividuais({ navigation }) {
 	let GraficoAprendizado = () => {
 
 		return(
-			<View style={{
-				flex: 1,
-				alignItems: 'center',
-				justifyContent: 'center',
-			}}>
+			<View style={styles.container}>
 				<View style={{
 					flex: 0.2,
 					alignItems: 'center',
@@ -505,11 +501,7 @@ function telaEstatIndividuais({ navigation }) {
 	let GraficoComportamento = () => {
 
 		return(
-			<View style={{
-				flex: 1,
-				alignItems: 'center',
-				justifyContent: 'center',
-			}}>
+			<View style={styles.container}>
 				<View style={{
 					flex: 0.2,
 					alignItems: 'center',
@@ -575,14 +567,12 @@ function telaEstatIndividuais({ navigation }) {
 
 	let GraficoNotas = () => {
 
-		return(
-			<ScrollView contentContainerStyle={styles.containerScroll}>
-				<View style={{
-					flex: 1,
-					justifyContent: 'center',
-					alignContent: 'center',
-					alignItems: 'center',
-				}}>
+		function TelaAv1() {
+
+			return(
+
+				<View style={styles.container}>
+					<Title>Avaliação 1</Title>
 					<VictoryChart 
 						width={Dimensions.get('window').width - 5}
 					>
@@ -597,6 +587,16 @@ function telaEstatIndividuais({ navigation }) {
 							labelComponent={<VictoryLabel dx={10} />}
 						/>
 					</VictoryChart>
+				</View>
+			);
+		}
+
+		function TelaAv2() {
+
+			return(
+				
+				<View style={styles.container}>
+					<Title>Avaliação 2</Title>
 					<VictoryChart 
 						width={Dimensions.get('window').width - 5}
 					>
@@ -611,6 +611,16 @@ function telaEstatIndividuais({ navigation }) {
 							labelComponent={<VictoryLabel dx={10} />}
 						/>
 					</VictoryChart>
+				</View>
+			);
+		}
+
+		function TelaAv3() {
+
+			return(
+				
+				<View style={styles.container}>
+					<Title>Avaliação 3</Title>
 					<VictoryChart 
 						width={Dimensions.get('window').width - 5}
 					>
@@ -625,6 +635,16 @@ function telaEstatIndividuais({ navigation }) {
 							labelComponent={<VictoryLabel dx={10} />}
 						/>
 					</VictoryChart>
+				</View>
+			);
+		}
+
+		function TelaAv4() {
+
+			return(
+				
+				<View style={styles.container}>
+					<Title>Avaliação 4</Title>
 					<VictoryChart 
 						width={Dimensions.get('window').width - 5}
 					>
@@ -640,7 +660,16 @@ function telaEstatIndividuais({ navigation }) {
 						/>
 					</VictoryChart>
 				</View>
-			</ScrollView>
+			);
+		}
+
+		return(
+			<Pages horizontal={false} indicatorPosition={'right'} indicatorColor="#766ec5">
+				<TelaAv1 />
+				<TelaAv2 />
+				<TelaAv3 />
+				<TelaAv4 />
+			</Pages>
 		);
 	}
 
