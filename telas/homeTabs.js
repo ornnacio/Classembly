@@ -318,12 +318,16 @@ function telaAddTurma({ navigation }){
 		}
 	
 		async function pickCSV() {
-	
-			setVisibleDialog1(true);
 
 			let doc = DocumentPicker.getDocumentAsync({
 				copyToCacheDirectory: false,
 			}).then(async p => { //CW: codigo ruim
+
+				if(p.type === "cancel"){
+					return;
+				}
+					
+				setVisibleDialog1(true);
 	
 				const stringCSV = await FileSystem.readAsStringAsync(p.uri);
 				let arr = stringCSV.split('\n');

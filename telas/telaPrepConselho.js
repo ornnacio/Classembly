@@ -72,12 +72,15 @@ function telaImportarNotas({ navigation }) {
 		}
 
 		async function pickCSV() {
-
-			setVisibleDialog1(true);
 	
 			let doc = DocumentPicker.getDocumentAsync({
 				copyToCacheDirectory: false,
 			}).then(async p => {
+
+				if(p.type === "cancel"){
+					return;
+				}
+				setVisibleDialog1(true);
 	
 				const stringCSV = await FileSystem.readAsStringAsync(p.uri);
 				let arr = stringCSV.split('\n');
@@ -141,7 +144,7 @@ function telaImportarNotas({ navigation }) {
 							<Paragraph>Salvando notas...</Paragraph>
 						</Dialog.Content>
 					</Dialog>
-					<Dialog visible={visibleDialog2} dismissable={true} onDismiss={() => confirm()}>
+					<Dialog visible={visibleDialog2} onDismiss={() => confirm()}>
 						<Dialog.Content>
 							<Paragraph>Notas salvas com sucesso!</Paragraph>
 						</Dialog.Content>
