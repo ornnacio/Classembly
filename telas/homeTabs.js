@@ -73,8 +73,7 @@ function MenuPerfil( props ){
 			 	{ 
 					text: "Sim", 
 					onPress: () => {
-						logout();
-						navigation.replace('Loading');
+						logout().then(() => navigation.replace('Loading'));
 					} 
 				}
 			]
@@ -193,8 +192,7 @@ function telaSelectTurma(){
 	}
 	
 	function sair(){
-		logout();
-		navigation.navigate('Loading');
+		logout().then(() => navigation.navigate('Loading'));
 	};
 	
 	return(
