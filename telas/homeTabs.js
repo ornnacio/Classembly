@@ -299,7 +299,7 @@ function telaAddTurma({ navigation }){
 						textAlign: 'center', 
 						color: '#f4f9fc',
 						fontSize: 14,
-					}}>Para adicionar uma turma, clique no botão "Abrir conversor", selecione a planilha de notas da turma e baixe o arquivo em formato CSV. Após isso, clique no botão "Selecionar CSV" e selecione o arquivo CSV do seu dispositivo.</Paragraph> 
+					}}>Para adicionar uma turma, baixe a planilha de notas da turma desejada no SIGAA, clique no botão "Abrir conversor", selecione a planilha de notas e baixe o arquivo em formato CSV. Após isso, clique no botão "Selecionar CSV" e selecione o arquivo CSV do seu dispositivo.</Paragraph> 
 				</View>
 				<Image source={seta} style={{width: 50, height: 50, marginTop: 5}} />
 			</View>
