@@ -689,10 +689,952 @@ function telaEstatIndividuais({ navigation }) {
 }
 
 function telaEstatComparadas({ navigation }) {
-	return (
-		<View style={styles.container}>
-			<Text>placeholder 3</Text>
-		</View>
+
+	let GraficoAprendizado = () => {
+
+		const [prontoEmail, setProntoEmail] = useState(false);
+		const [prontoTurmas, setProntoTurmas] = useState(false);
+		const [prontoIds, setProntoIds] = useState(false);
+		const [email, setEmail] = useState('')
+		const [ids, setIds] = useState([]);
+		const [nomes, setNomes] = useState([]);
+		const [turmas, setTurmas] = useState([]);
+		const sliceColor1 = ['#918bd1','#ada8dc','#c8c5e8'];
+		const sliceColor2 = ['#918bd1','#ada8dc'];
+	
+		let currentUserUID = firebase.auth().currentUser.uid;
+	
+		useEffect(() => {
+	
+			async function getEmail(){
+	
+				if(!prontoEmail){
+					let doc = await firebase
+					.firestore()
+					.collection('users')
+					.doc(currentUserUID)
+					.get();
+	
+					if (doc.exists){
+						setEmail(doc.data().email);
+						setProntoEmail(true);
+					}
+				}
+			}
+	
+			async function getIds(){
+	
+				if(!prontoIds){
+					firebase.firestore()
+						.collection('turmas')
+						.get()
+						.then((query) => {
+							let listIds = [], listNomes = [];
+							
+							query.forEach((doc) => {
+								if (doc.data().professor === email) {
+									listIds.push(doc.id);
+									listNomes.push(doc.data().nome);
+								}
+							});
+	
+							setIds(listIds);
+							setNomes(listNomes);
+							setProntoIds(true);
+						})
+				}
+			}
+	
+			async function getTurmas(){
+	
+				if(!prontoTurmas){
+	
+					let listAprend = [];
+	
+					ids.forEach(async(i, index) => {
+	
+						let doc = await firebase.firestore()
+							.collection('turmas')
+							.doc(i)
+							.collection('alunos')
+							.get()
+							.then((query) => {
+	
+								let counts = [0, 0, 0];
+	
+								query.forEach((a) => {
+									switch(a.data().aprendizado){
+										case "Auditivo":
+											counts[0] += 1;
+											break;
+										case "Cinestésico":
+											counts[1] += 1;
+											break;
+										case "Visual":
+											counts[2] += 1;
+											break;
+									}
+								})
+	
+								listAprend.push(counts);
+							});
+	
+						if(!(listAprend.length < turmas.length)){
+							setTurmas(listAprend);
+							setProntoTurmas(true);
+						}
+					})
+				}
+			}
+	
+			getEmail().then(getIds()).then(getTurmas());
+		})
+	
+		return (
+			<View style={styles.container}>
+				<View style={{
+					flex: 0.2,
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: Dimensions.get('window').width,
+					borderWidth: 1,
+					borderColor: '#766ec5',
+					borderBottomLeftRadius: 15,
+					borderBottomRightRadius: 15,
+				}}>
+					<Title style={{
+						color: '#766ec5'
+					}}>MODO DE APRENDIZADO</Title>
+				</View>
+				<View style={{flex: 0.8}}>
+					<ScrollView contentContainerStyle={styles.containerScroll}>
+						{!prontoTurmas &&
+							<ActivityIndicator size='large' color="#766ec5" />
+						}
+						{prontoTurmas && turmas.map((t, index) => {
+							
+							return(<>
+								<Title style={{marginVertical: 10, color: '#766ec5'}}>{nomes[index]}</Title>
+								<PieChart
+									widthAndHeight={0.6 * Dimensions.get('window').width}
+									series={t}
+									sliceColor={sliceColor1}
+									style={{marginBottom: 30}}
+								/>
+								<View style={{
+									justifyContent: 'center', 
+									textAlign: 'center', 
+									alignItems: 'center', 
+									borderColor: '#766ec5',
+									borderWidth: 1,
+									borderRadius: 5,
+									padding: 5
+								}}>
+									<View style={{flexDirection: 'row', alignItems: 'center'}}>
+										<View style={{
+											height: 15,
+											width: 15,
+											borderRadius: 1000,
+											backgroundColor: '#918bd1',
+											marginRight: 5
+										}} /><Text style={{fontSize: 18}}>Auditivo: {t[0] + ' ' + (t[0] != 1 ? 'alunos' : 'aluno')}</Text>
+									</View>
+									<View style={{flexDirection: 'row', alignItems: 'center'}}>
+										<View style={{
+											height: 15,
+											width: 15,
+											borderRadius: 1000,
+											backgroundColor: '#ada8dc',
+											marginRight: 5
+										}} /><Text style={{fontSize: 18}}>Cinestésico: {t[1] + ' ' + (t[1] != 1 ? 'alunos' : 'aluno')}</Text>
+									</View>
+									<View style={{flexDirection: 'row', alignItems: 'center'}}>
+										<View style={{
+											height: 15,
+											width: 15,
+											borderRadius: 1000,
+											backgroundColor: '#c8c5e8',
+											marginRight: 5
+										}} /><Text style={{fontSize: 18}}>Visual: {t[2] + ' ' + (t[2] != 1 ? 'alunos' : 'aluno')}</Text>
+									</View>
+								</View>
+							</>);
+						})}
+					</ScrollView>
+				</View>
+			</View>
+		);
+	}
+
+	let GraficoComportamento = () => {
+
+		const [prontoEmail, setProntoEmail] = useState(false);
+		const [prontoTurmas, setProntoTurmas] = useState(false);
+		const [prontoIds, setProntoIds] = useState(false);
+		const [email, setEmail] = useState('')
+		const [ids, setIds] = useState([]);
+		const [nomes, setNomes] = useState([]);
+		const [turmas, setTurmas] = useState([]);
+		const sliceColor1 = ['#918bd1','#ada8dc','#c8c5e8'];
+		const sliceColor2 = ['#918bd1','#ada8dc'];
+	
+		let currentUserUID = firebase.auth().currentUser.uid;
+	
+		useEffect(() => {
+	
+			async function getEmail(){
+	
+				if(!prontoEmail){
+					let doc = await firebase
+					.firestore()
+					.collection('users')
+					.doc(currentUserUID)
+					.get();
+	
+					if (doc.exists){
+						setEmail(doc.data().email);
+						setProntoEmail(true);
+					}
+				}
+			}
+	
+			async function getIds(){
+	
+				if(!prontoIds){
+					firebase.firestore()
+						.collection('turmas')
+						.get()
+						.then((query) => {
+							let listIds = [], listNomes = [];
+							
+							query.forEach((doc) => {
+								if (doc.data().professor === email) {
+									listIds.push(doc.id);
+									listNomes.push(doc.data().nome);
+								}
+							});
+	
+							setIds(listIds);
+							setNomes(listNomes);
+							setProntoIds(true);
+						})
+				}
+			}
+	
+			async function getTurmas(){
+	
+				if(!prontoTurmas){
+	
+					let listComp = [];
+	
+					ids.forEach(async(i, index) => {
+	
+						let doc = await firebase.firestore()
+							.collection('turmas')
+							.doc(i)
+							.collection('alunos')
+							.get()
+							.then((query) => {
+	
+								let counts = [0, 0];
+	
+								query.forEach((a) => {
+									switch(a.data().comp){
+										case "Participativo":
+											counts[0] += 1;
+											break;
+										case "Não Participativo":
+											counts[1] += 1;
+											break;
+									}
+								})
+	
+								listComp.push(counts);
+							});
+	
+						if(!(listComp.length < turmas.length)){
+							setTurmas(listComp);
+							setProntoTurmas(true);
+						}
+					})
+				}
+			}
+	
+			getEmail().then(getIds()).then(getTurmas());
+		})
+	
+		return (
+			<View style={styles.container}>
+				<View style={{
+					flex: 0.2,
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: Dimensions.get('window').width,
+					borderWidth: 1,
+					borderColor: '#766ec5',
+					borderBottomLeftRadius: 15,
+					borderBottomRightRadius: 15,
+				}}>
+					<Title style={{
+						color: '#766ec5'
+					}}>COMPORTAMENTO</Title>
+				</View>
+				<View style={{flex: 0.8}}>
+					<ScrollView contentContainerStyle={styles.containerScroll}>
+						{!prontoTurmas &&
+							<ActivityIndicator size='large' color="#766ec5" />
+						}
+						{prontoTurmas && turmas.map((t, index) => {
+							
+							return(<>
+								<Title style={{marginVertical: 10, color: '#766ec5'}}>{nomes[index]}</Title>
+								<PieChart
+									widthAndHeight={0.6 * Dimensions.get('window').width}
+									series={t}
+									sliceColor={sliceColor2}
+									style={{marginBottom: 30}}
+								/>
+								<View style={{
+									justifyContent: 'center', 
+									textAlign: 'center', 
+									alignItems: 'center', 
+									borderColor: '#766ec5',
+									borderWidth: 1,
+									borderRadius: 5,
+									padding: 5
+								}}>
+									<View style={{flexDirection: 'row', alignItems: 'center'}}>
+										<View style={{
+											height: 15,
+											width: 15,
+											borderRadius: 1000,
+											backgroundColor: '#918bd1',
+											marginRight: 5
+										}} /><Text style={{fontSize: 18}}>Participativo: {t[0] + ' ' + (t[0] != 1 ? 'alunos' : 'aluno')}</Text>
+									</View>
+									<View style={{flexDirection: 'row', alignItems: 'center'}}>
+										<View style={{
+											height: 15,
+											width: 15,
+											borderRadius: 1000,
+											backgroundColor: '#ada8dc',
+											marginRight: 5
+										}} /><Text style={{fontSize: 18}}>Não Participativo: {t[1] + ' ' + (t[1] != 1 ? 'alunos' : 'aluno')}</Text>
+									</View>
+								</View>
+							</>);
+						})}
+					</ScrollView>
+				</View>
+			</View>
+		);
+	}
+
+	let GraficoNotas1 = () => {
+
+		const [prontoEmail, setProntoEmail] = useState(false);
+		const [prontoTurmas, setProntoTurmas] = useState(false);
+		const [prontoIds, setProntoIds] = useState(false);
+		const [email, setEmail] = useState('')
+		const [ids, setIds] = useState([]);
+		const [nomes, setNomes] = useState([]);
+		const [turmas, setTurmas] = useState([]);
+	
+		let currentUserUID = firebase.auth().currentUser.uid;
+	
+		useEffect(() => {
+	
+			async function getEmail(){
+	
+				if(!prontoEmail){
+					let doc = await firebase
+					.firestore()
+					.collection('users')
+					.doc(currentUserUID)
+					.get();
+	
+					if (doc.exists){
+						setEmail(doc.data().email);
+						setProntoEmail(true);
+					}
+				}
+			}
+	
+			async function getIds(){
+	
+				if(!prontoIds){
+					firebase.firestore()
+						.collection('turmas')
+						.get()
+						.then((query) => {
+							let listIds = [], listNomes = [];
+							
+							query.forEach((doc) => {
+								if (doc.data().professor === email) {
+									listIds.push(doc.id);
+									listNomes.push(doc.data().nome);
+								}
+							});
+	
+							setIds(listIds);
+							setNomes(listNomes);
+							setProntoIds(true);
+						})
+				}
+			}
+	
+			async function getTurmas(){
+	
+				if(!prontoTurmas){
+
+					let listNotas = [];
+	
+					ids.forEach(async(i, index) => {
+	
+						let doc = await firebase.firestore()
+							.collection('turmas')
+							.doc(i)
+							.collection('alunos')
+							.get()
+							.then((query) => {
+	
+								let tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	
+								query.forEach((doc) => {
+									tempAv1[parseInt(doc.data().n1)] += 1;
+								})
+
+								var data1 = [
+									{ nota: 1, qntd: tempAv1[0] },
+									{ nota: 2, qntd: tempAv1[1] },
+									{ nota: 3, qntd: tempAv1[2] },
+									{ nota: 4, qntd: tempAv1[3] },
+									{ nota: 5, qntd: tempAv1[4] },
+									{ nota: 6, qntd: tempAv1[5] },
+									{ nota: 7, qntd: tempAv1[6] },
+									{ nota: 8, qntd: tempAv1[7] },
+									{ nota: 9, qntd: tempAv1[8] },
+									{ nota: 10, qntd: tempAv1[9] },
+									{ nota: 11, qntd: tempAv1[10] },
+								];
+								
+								listNotas.push(data1);
+							});
+	
+						if(!(listNotas.length < turmas.length)){
+							setTurmas(listNotas);
+							setProntoTurmas(true);
+						}
+					})
+				}
+			}
+	
+			getEmail().then(getIds()).then(getTurmas());
+		})
+
+		return(
+			<View style={styles.container}>
+				<View style={{
+					flex: 0.2,
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: Dimensions.get('window').width,
+					borderWidth: 1,
+					borderColor: '#766ec5',
+					borderBottomLeftRadius: 15,
+					borderBottomRightRadius: 15,
+				}}>
+					<Title style={{
+						color: '#766ec5'
+					}}>NOTAS DA AVALIAÇÃO 1</Title>
+				</View>
+				<View style={{flex: 0.8}}>
+					<ScrollView contentContainerStyle={styles.containerScroll}>
+						{!prontoTurmas &&
+							<ActivityIndicator size='large' color="#766ec5" />
+						}
+						{prontoTurmas && turmas.map((t, index) => {
+							
+							return(<>
+								<Title style={{color: '#766ec5', marginVertical: 15}}>{nomes[index]}</Title>
+								<VictoryChart 
+									width={Dimensions.get('window').width - 5}
+								>
+									<VictoryBar 
+										data={t} 
+										x="nota" y="qntd" 
+										style={{ data: {fill: '#766ec5'} }} 
+										alignment="start"
+										barRatio={1.05}
+										categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+										labels={({ datum }) => datum.qntd}
+										labelComponent={<VictoryLabel dx={10} />}
+									/>
+								</VictoryChart>
+							</>);
+						})}
+					</ScrollView>
+				</View>
+			</View>
+		);
+	}
+
+	let GraficoNotas2 = () => {
+
+		const [prontoEmail, setProntoEmail] = useState(false);
+		const [prontoTurmas, setProntoTurmas] = useState(false);
+		const [prontoIds, setProntoIds] = useState(false);
+		const [email, setEmail] = useState('')
+		const [ids, setIds] = useState([]);
+		const [nomes, setNomes] = useState([]);
+		const [turmas, setTurmas] = useState([]);
+	
+		let currentUserUID = firebase.auth().currentUser.uid;
+	
+		useEffect(() => {
+	
+			async function getEmail(){
+	
+				if(!prontoEmail){
+					let doc = await firebase
+					.firestore()
+					.collection('users')
+					.doc(currentUserUID)
+					.get();
+	
+					if (doc.exists){
+						setEmail(doc.data().email);
+						setProntoEmail(true);
+					}
+				}
+			}
+	
+			async function getIds(){
+	
+				if(!prontoIds){
+					firebase.firestore()
+						.collection('turmas')
+						.get()
+						.then((query) => {
+							let listIds = [], listNomes = [];
+							
+							query.forEach((doc) => {
+								if (doc.data().professor === email) {
+									listIds.push(doc.id);
+									listNomes.push(doc.data().nome);
+								}
+							});
+	
+							setIds(listIds);
+							setNomes(listNomes);
+							setProntoIds(true);
+						})
+				}
+			}
+	
+			async function getTurmas(){
+	
+				if(!prontoTurmas){
+
+					let listNotas = [];
+	
+					ids.forEach(async(i, index) => {
+	
+						let doc = await firebase.firestore()
+							.collection('turmas')
+							.doc(i)
+							.collection('alunos')
+							.get()
+							.then((query) => {
+	
+								let tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	
+								query.forEach((doc) => {
+									tempAv1[parseInt(doc.data().n2)] += 1;
+								})
+
+								var data1 = [
+									{ nota: 1, qntd: tempAv1[0] },
+									{ nota: 2, qntd: tempAv1[1] },
+									{ nota: 3, qntd: tempAv1[2] },
+									{ nota: 4, qntd: tempAv1[3] },
+									{ nota: 5, qntd: tempAv1[4] },
+									{ nota: 6, qntd: tempAv1[5] },
+									{ nota: 7, qntd: tempAv1[6] },
+									{ nota: 8, qntd: tempAv1[7] },
+									{ nota: 9, qntd: tempAv1[8] },
+									{ nota: 10, qntd: tempAv1[9] },
+									{ nota: 11, qntd: tempAv1[10] },
+								];
+								
+								listNotas.push(data1);
+							});
+	
+						if(!(listNotas.length < turmas.length)){
+							setTurmas(listNotas);
+							setProntoTurmas(true);
+						}
+					})
+				}
+			}
+	
+			getEmail().then(getIds()).then(getTurmas());
+		})
+
+		return(
+			<View style={styles.container}>
+				<View style={{
+					flex: 0.2,
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: Dimensions.get('window').width,
+					borderWidth: 1,
+					borderColor: '#766ec5',
+					borderBottomLeftRadius: 15,
+					borderBottomRightRadius: 15,
+				}}>
+					<Title style={{
+						color: '#766ec5'
+					}}>NOTAS DA AVALIAÇÃO 2</Title>
+				</View>
+				<View style={{flex: 0.8}}>
+					<ScrollView contentContainerStyle={styles.containerScroll}>
+						{!prontoTurmas &&
+							<ActivityIndicator size='large' color="#766ec5" />
+						}
+						{prontoTurmas && turmas.map((t, index) => {
+							
+							return(<>
+								<Title style={{color: '#766ec5', marginVertical: 15}}>{nomes[index]}</Title>
+								<VictoryChart 
+									width={Dimensions.get('window').width - 5}
+								>
+									<VictoryBar 
+										data={t} 
+										x="nota" y="qntd" 
+										style={{ data: {fill: '#766ec5'} }} 
+										alignment="start"
+										barRatio={1.05}
+										categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+										labels={({ datum }) => datum.qntd}
+										labelComponent={<VictoryLabel dx={10} />}
+									/>
+								</VictoryChart>
+							</>);
+						})}
+					</ScrollView>
+				</View>
+			</View>
+		);
+	}
+
+	let GraficoNotas3 = () => {
+
+		const [prontoEmail, setProntoEmail] = useState(false);
+		const [prontoTurmas, setProntoTurmas] = useState(false);
+		const [prontoIds, setProntoIds] = useState(false);
+		const [email, setEmail] = useState('')
+		const [ids, setIds] = useState([]);
+		const [nomes, setNomes] = useState([]);
+		const [turmas, setTurmas] = useState([]);
+	
+		let currentUserUID = firebase.auth().currentUser.uid;
+	
+		useEffect(() => {
+	
+			async function getEmail(){
+	
+				if(!prontoEmail){
+					let doc = await firebase
+					.firestore()
+					.collection('users')
+					.doc(currentUserUID)
+					.get();
+	
+					if (doc.exists){
+						setEmail(doc.data().email);
+						setProntoEmail(true);
+					}
+				}
+			}
+	
+			async function getIds(){
+	
+				if(!prontoIds){
+					firebase.firestore()
+						.collection('turmas')
+						.get()
+						.then((query) => {
+							let listIds = [], listNomes = [];
+							
+							query.forEach((doc) => {
+								if (doc.data().professor === email) {
+									listIds.push(doc.id);
+									listNomes.push(doc.data().nome);
+								}
+							});
+	
+							setIds(listIds);
+							setNomes(listNomes);
+							setProntoIds(true);
+						})
+				}
+			}
+	
+			async function getTurmas(){
+	
+				if(!prontoTurmas){
+
+					let listNotas = [];
+	
+					ids.forEach(async(i, index) => {
+	
+						let doc = await firebase.firestore()
+							.collection('turmas')
+							.doc(i)
+							.collection('alunos')
+							.get()
+							.then((query) => {
+	
+								let tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	
+								query.forEach((doc) => {
+									tempAv1[parseInt(doc.data().n3)] += 1;
+								})
+
+								var data1 = [
+									{ nota: 1, qntd: tempAv1[0] },
+									{ nota: 2, qntd: tempAv1[1] },
+									{ nota: 3, qntd: tempAv1[2] },
+									{ nota: 4, qntd: tempAv1[3] },
+									{ nota: 5, qntd: tempAv1[4] },
+									{ nota: 6, qntd: tempAv1[5] },
+									{ nota: 7, qntd: tempAv1[6] },
+									{ nota: 8, qntd: tempAv1[7] },
+									{ nota: 9, qntd: tempAv1[8] },
+									{ nota: 10, qntd: tempAv1[9] },
+									{ nota: 11, qntd: tempAv1[10] },
+								];
+								
+								listNotas.push(data1);
+							});
+	
+						if(!(listNotas.length < turmas.length)){
+							setTurmas(listNotas);
+							setProntoTurmas(true);
+						}
+					})
+				}
+			}
+	
+			getEmail().then(getIds()).then(getTurmas());
+		})
+
+		return(
+			<View style={styles.container}>
+				<View style={{
+					flex: 0.2,
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: Dimensions.get('window').width,
+					borderWidth: 1,
+					borderColor: '#766ec5',
+					borderBottomLeftRadius: 15,
+					borderBottomRightRadius: 15,
+				}}>
+					<Title style={{
+						color: '#766ec5'
+					}}>NOTAS DA AVALIAÇÃO 3</Title>
+				</View>
+				<View style={{flex: 0.8}}>
+					<ScrollView contentContainerStyle={styles.containerScroll}>
+						{!prontoTurmas &&
+							<ActivityIndicator size='large' color="#766ec5" />
+						}
+						{prontoTurmas && turmas.map((t, index) => {
+							
+							return(<>
+								<Title style={{color: '#766ec5', marginVertical: 15}}>{nomes[index]}</Title>
+								<VictoryChart 
+									width={Dimensions.get('window').width - 5}
+								>
+									<VictoryBar 
+										data={t} 
+										x="nota" y="qntd" 
+										style={{ data: {fill: '#766ec5'} }} 
+										alignment="start"
+										barRatio={1.05}
+										categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+										labels={({ datum }) => datum.qntd}
+										labelComponent={<VictoryLabel dx={10} />}
+									/>
+								</VictoryChart>
+							</>);
+						})}
+					</ScrollView>
+				</View>
+			</View>
+		);
+	}
+
+	let GraficoNotas4 = () => {
+
+		const [prontoEmail, setProntoEmail] = useState(false);
+		const [prontoTurmas, setProntoTurmas] = useState(false);
+		const [prontoIds, setProntoIds] = useState(false);
+		const [email, setEmail] = useState('')
+		const [ids, setIds] = useState([]);
+		const [nomes, setNomes] = useState([]);
+		const [turmas, setTurmas] = useState([]);
+	
+		let currentUserUID = firebase.auth().currentUser.uid;
+	
+		useEffect(() => {
+	
+			async function getEmail(){
+	
+				if(!prontoEmail){
+					let doc = await firebase
+					.firestore()
+					.collection('users')
+					.doc(currentUserUID)
+					.get();
+	
+					if (doc.exists){
+						setEmail(doc.data().email);
+						setProntoEmail(true);
+					}
+				}
+			}
+	
+			async function getIds(){
+	
+				if(!prontoIds){
+					firebase.firestore()
+						.collection('turmas')
+						.get()
+						.then((query) => {
+							let listIds = [], listNomes = [];
+							
+							query.forEach((doc) => {
+								if (doc.data().professor === email) {
+									listIds.push(doc.id);
+									listNomes.push(doc.data().nome);
+								}
+							});
+	
+							setIds(listIds);
+							setNomes(listNomes);
+							setProntoIds(true);
+						})
+				}
+			}
+	
+			async function getTurmas(){
+	
+				if(!prontoTurmas){
+
+					let listNotas = [];
+	
+					ids.forEach(async(i, index) => {
+	
+						let doc = await firebase.firestore()
+							.collection('turmas')
+							.doc(i)
+							.collection('alunos')
+							.get()
+							.then((query) => {
+	
+								let tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	
+								query.forEach((doc) => {
+									tempAv1[parseInt(doc.data().n4)] += 1;
+								})
+
+								var data1 = [
+									{ nota: 1, qntd: tempAv1[0] },
+									{ nota: 2, qntd: tempAv1[1] },
+									{ nota: 3, qntd: tempAv1[2] },
+									{ nota: 4, qntd: tempAv1[3] },
+									{ nota: 5, qntd: tempAv1[4] },
+									{ nota: 6, qntd: tempAv1[5] },
+									{ nota: 7, qntd: tempAv1[6] },
+									{ nota: 8, qntd: tempAv1[7] },
+									{ nota: 9, qntd: tempAv1[8] },
+									{ nota: 10, qntd: tempAv1[9] },
+									{ nota: 11, qntd: tempAv1[10] },
+								];
+								
+								listNotas.push(data1);
+							});
+	
+						if(!(listNotas.length < turmas.length)){
+							setTurmas(listNotas);
+							setProntoTurmas(true);
+						}
+					})
+				}
+			}
+	
+			getEmail().then(getIds()).then(getTurmas());
+		})
+
+		return(
+			<View style={styles.container}>
+				<View style={{
+					flex: 0.2,
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: Dimensions.get('window').width,
+					borderWidth: 1,
+					borderColor: '#766ec5',
+					borderBottomLeftRadius: 15,
+					borderBottomRightRadius: 15,
+				}}>
+					<Title style={{
+						color: '#766ec5'
+					}}>NOTAS DA AVALIAÇÃO 4</Title>
+				</View>
+				<View style={{flex: 0.8}}>
+					<ScrollView contentContainerStyle={styles.containerScroll}>
+						{!prontoTurmas &&
+							<ActivityIndicator size='large' color="#766ec5" />
+						}
+						{prontoTurmas && turmas.map((t, index) => {
+							
+							return(<>
+								<Title style={{color: '#766ec5', marginVertical: 15}}>{nomes[index]}</Title>
+								<VictoryChart 
+									width={Dimensions.get('window').width - 5}
+								>
+									<VictoryBar 
+										data={t} 
+										x="nota" y="qntd" 
+										style={{ data: {fill: '#766ec5'} }} 
+										alignment="start"
+										barRatio={1.05}
+										categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+										labels={({ datum }) => datum.qntd}
+										labelComponent={<VictoryLabel dx={10} />}
+									/>
+								</VictoryChart>
+							</>);
+						})}
+					</ScrollView>
+				</View>
+			</View>
+		);
+	}
+
+	return(
+		<Pages indicatorColor={'#766ec5'}>
+			<GraficoAprendizado />
+			<GraficoComportamento />
+			<GraficoNotas1 />
+			<GraficoNotas2 />
+			<GraficoNotas3 />
+			<GraficoNotas4 />
+		</Pages>
 	);
 }
 
