@@ -486,16 +486,29 @@ function telaEscreverComentario({ route, navigation }){
 	
 	return(
 		<View style={styles.container}>
-			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever comentário sobre {route.params.nome}</Text>
-			<TextInput
-				style={styles.inputBox}
-				underlineColor='#766ec5'
-				multiline={true}
-				numberOfLines={6}
-				onChangeText={(text) => setTxt(text)}
-				value={txt}
-				placeholder="Digite o comentário..."
-			/>
+			<View style={{
+				flex: 0.3,
+				alignItems: 'center',
+				justifyContent: 'center',
+				width: Dimensions.get('window').width,
+				borderWidth: 1,
+				borderColor: '#766ec5',
+				borderBottomLeftRadius: 15,
+				borderBottomRightRadius: 15,
+			}}>
+				<Text style={{fontSize: 22, textAlign: 'center', color: '#766ec5'}}>Escrever comentário sobre {route.params.nome}</Text>
+			</View>
+			<View style={{flex: 0.7}}>
+				<TextInput
+					style={styles.inputBox}
+					underlineColor='#766ec5'
+					multiline={true}
+					numberOfLines={6}
+					onChangeText={(text) => setTxt(text)}
+					value={txt}
+					placeholder="Digite o comentário..."
+				/>
+			</View>
 			<FAB
 				style={styles.fab}
 				icon="content-save"
@@ -550,16 +563,29 @@ function telaEditarComentario({ route, navigation }){
 
 	return(
 		<View style={styles.container}>
-			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever comentário sobre {route.params.nome}</Text>
-			<TextInput
-				style={styles.inputBox}
-				underlineColor='#766ec5'
-				multiline={true}
-				numberOfLines={6}
-				onChangeText={(text) => setTxt(text)}
-				value={txt}
-				placeholder="Digite o comentário..."
-			/>
+			<View style={{
+				flex: 0.3,
+				alignItems: 'center',
+				justifyContent: 'center',
+				width: Dimensions.get('window').width,
+				borderWidth: 1,
+				borderColor: '#766ec5',
+				borderBottomLeftRadius: 15,
+				borderBottomRightRadius: 15,
+			}}>
+				<Text style={{fontSize: 22, textAlign: 'center', color: '#766ec5'}}>Escrever comentário sobre {route.params.nome}</Text>
+			</View>
+			<View style={{flex: 0.7}}>
+				<TextInput
+					style={styles.inputBox}
+					underlineColor='#766ec5'
+					multiline={true}
+					numberOfLines={6}
+					onChangeText={(text) => setTxt(text)}
+					value={txt}
+					placeholder="Digite o comentário..."
+				/>
+			</View>
 			<FAB
 				style={styles.fab}
 				icon="content-save"

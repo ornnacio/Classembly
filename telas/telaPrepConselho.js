@@ -161,7 +161,6 @@ function telaImportarNotas({ navigation }) {
 		</Pages>
 	);
 	
-	
 }
 
 function telaAutoAval({ navigation }) {
@@ -347,16 +346,29 @@ function telaEscreverAutoAval({ route, navigation }) {
 
 	return (
 		<View style={styles.container}>
-			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever autoavaliação</Text>
-			<TextInput
-				style={styles.inputBox}
-				underlineColor='#766ec5'
-				multiline={true}
-				numberOfLines={6}
-				onChangeText={(text) => setTxt(text)}
-				value={txt}
-				placeholder="Digite a autoavaliação..."
-			/>
+			<View style={{
+				flex: 0.3,
+				alignItems: 'center',
+				justifyContent: 'center',
+				width: Dimensions.get('window').width,
+				borderWidth: 1,
+				borderColor: '#766ec5',
+				borderBottomLeftRadius: 15,
+				borderBottomRightRadius: 15,
+			}}>
+				<Text style={{fontSize: 22, textAlign: 'center', color: '#766ec5'}}>Escrever autoavaliação</Text>
+			</View>
+			<View style={{flex: 0.7}}>
+				<TextInput
+					style={styles.inputBox}
+					underlineColor='#766ec5'
+					multiline={true}
+					numberOfLines={6}
+					onChangeText={(text) => setTxt(text)}
+					value={txt}
+					placeholder="Digite a autoavaliação..."
+				/>
+			</View>
 			<FAB
 				style={styles.fab}
 				icon="content-save"
@@ -415,16 +427,29 @@ function telaEditarAutoAval({ route }) {
 
 	return (
 		<View style={styles.container}>
-			<Text style={{fontSize: 22, textAlign: 'center'}}>Escrever autoavaliação</Text>
-			<TextInput
-				style={styles.inputBox}
-				underlineColor='#766ec5'
-				multiline={true}
-				numberOfLines={6}
-				onChangeText={(text) => setTxt(text)}
-				value={txt}
-				placeholder="Digite a autoavaliação..."
-			/>
+			<View style={{
+				flex: 0.3,
+				alignItems: 'center',
+				justifyContent: 'center',
+				width: Dimensions.get('window').width,
+				borderWidth: 1,
+				borderColor: '#766ec5',
+				borderBottomLeftRadius: 15,
+				borderBottomRightRadius: 15,
+			}}>
+				<Text style={{fontSize: 22, textAlign: 'center', color: '#766ec5'}}>Escrever autoavaliação</Text>
+			</View>
+			<View style={{flex: 0.7}}>
+				<TextInput
+					style={styles.inputBox}
+					underlineColor='#766ec5'
+					multiline={true}
+					numberOfLines={6}
+					onChangeText={(text) => setTxt(text)}
+					value={txt}
+					placeholder="Digite a autoavaliação..."
+				/>
+			</View>
 			<FAB
 				style={styles.fab}
 				icon="content-save"
