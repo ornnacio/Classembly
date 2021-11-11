@@ -841,7 +841,8 @@ function telaEstatComparadas({ navigation }) {
 									borderColor: '#766ec5',
 									borderWidth: 1,
 									borderRadius: 5,
-									padding: 5
+									padding: 5,
+									marginBottom: 15
 								}}>
 									<View style={{flexDirection: 'row', alignItems: 'center'}}>
 										<View style={{
@@ -1014,7 +1015,8 @@ function telaEstatComparadas({ navigation }) {
 									borderColor: '#766ec5',
 									borderWidth: 1,
 									borderRadius: 5,
-									padding: 5
+									padding: 5,
+									marginBottom: 15
 								}}>
 									<View style={{flexDirection: 'row', alignItems: 'center'}}>
 										<View style={{
