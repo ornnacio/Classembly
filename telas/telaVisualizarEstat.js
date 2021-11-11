@@ -167,7 +167,18 @@ function telaEstudantesPrio({ route, navigation }) {
 						}
 					})}
 					{(prontoAlunos && vazio) &&
-						<Text style={styles.txtAviso}>Nenhum aluno com prioridade de discussão</Text>
+					<View style={{
+						alignItems: 'center',
+						justifyContent: 'center',
+						width: 0.9 * Dimensions.get('window').width,
+						height: 0.3 * Dimensions.get('window').height,
+						borderWidth: 1,
+						borderColor: '#766ec5',
+						borderRadius: 15,
+						padding: 15
+					}}>
+						<Text style={{color: '#766ec5', fontSize: 22, textAlign: 'center'}}>Nenhum aluno com prioridade de discussão</Text>
+					</View>
 					}
 				</View>
 			</ScrollView>
@@ -220,7 +231,18 @@ function adicionarEstudantePrio({ route, navigation }) {
 						);
 					})}
 					{(alunos.length == 0) &&
-						<Text style={styles.txtAviso}>Todos os alunos já foram adicionados</Text>
+						<View style={{
+							alignItems: 'center',
+							justifyContent: 'center',
+							width: 0.9 * Dimensions.get('window').width,
+							height: 0.3 * Dimensions.get('window').height,
+							borderWidth: 1,
+							borderColor: '#766ec5',
+							borderRadius: 15,
+							padding: 15
+						}}>
+							<Text style={{color: '#766ec5', fontSize: 22, textAlign: 'center'}}>Todos os alunos já foram adicionados</Text>
+						</View>
 					}
 				</View>
 			</ScrollView>
@@ -586,21 +608,36 @@ function telaEstatIndividuais({ navigation }) {
 			return(
 
 				<View style={styles.container}>
-					<Title>Avaliação 1</Title>
-					<VictoryChart 
-						width={Dimensions.get('window').width - 5}
-					>
-						<VictoryBar 
-							data={av1} 
-							x="nota" y="qntd" 
-							style={{ data: {fill: '#766ec5'} }} 
-							alignment="start"
-							barRatio={1.05}
-							categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
-							labels={({ datum }) => datum.qntd}
-							labelComponent={<VictoryLabel dx={10} />}
-						/>
-					</VictoryChart>
+					<View style={{
+						flex: 0.2,
+						alignItems: 'center',
+						justifyContent: 'center',
+						width: Dimensions.get('window').width,
+						borderWidth: 1,
+						borderColor: '#766ec5',
+						borderBottomLeftRadius: 15,
+						borderBottomRightRadius: 15,
+					}}>
+						<Title style={{
+							color: '#766ec5'
+						}}>AVALIAÇÃO 1</Title>
+					</View>
+					<View style={{flex: 0.8}}>
+						<VictoryChart 
+							width={Dimensions.get('window').width - 5}
+						>
+							<VictoryBar 
+								data={av1} 
+								x="nota" y="qntd" 
+								style={{ data: {fill: '#766ec5'} }} 
+								alignment="start"
+								barRatio={1.05}
+								categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+								labels={({ datum }) => datum.qntd}
+								labelComponent={<VictoryLabel dx={10} />}
+							/>
+						</VictoryChart>
+					</View>
 				</View>
 			);
 		}
@@ -610,21 +647,36 @@ function telaEstatIndividuais({ navigation }) {
 			return(
 				
 				<View style={styles.container}>
-					<Title>Avaliação 2</Title>
-					<VictoryChart 
-						width={Dimensions.get('window').width - 5}
-					>
-						<VictoryBar 
-							data={av2} 
-							x="nota" y="qntd" 
-							style={{ data: {fill: '#766ec5'} }} 
-							alignment="start"
-							barRatio={1.05}
-							categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
-							labels={({ datum }) => datum.qntd}
-							labelComponent={<VictoryLabel dx={10} />}
-						/>
-					</VictoryChart>
+					<View style={{
+						flex: 0.2,
+						alignItems: 'center',
+						justifyContent: 'center',
+						width: Dimensions.get('window').width,
+						borderWidth: 1,
+						borderColor: '#766ec5',
+						borderBottomLeftRadius: 15,
+						borderBottomRightRadius: 15,
+					}}>
+						<Title style={{
+							color: '#766ec5'
+						}}>AVALIAÇÃO 2</Title>
+					</View>
+					<View style={{flex: 0.8}}>
+						<VictoryChart 
+							width={Dimensions.get('window').width - 5}
+						>
+							<VictoryBar 
+								data={av2} 
+								x="nota" y="qntd" 
+								style={{ data: {fill: '#766ec5'} }} 
+								alignment="start"
+								barRatio={1.05}
+								categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+								labels={({ datum }) => datum.qntd}
+								labelComponent={<VictoryLabel dx={10} />}
+							/>
+						</VictoryChart>
+					</View>
 				</View>
 			);
 		}
@@ -634,21 +686,36 @@ function telaEstatIndividuais({ navigation }) {
 			return(
 				
 				<View style={styles.container}>
-					<Title>Avaliação 3</Title>
-					<VictoryChart 
-						width={Dimensions.get('window').width - 5}
-					>
-						<VictoryBar 
-							data={av3} 
-							x="nota" y="qntd" 
-							style={{ data: {fill: '#766ec5'} }} 
-							alignment="start"
-							barRatio={1.05}
-							categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
-							labels={({ datum }) => datum.qntd}
-							labelComponent={<VictoryLabel dx={10} />}
-						/>
-					</VictoryChart>
+					<View style={{
+						flex: 0.2,
+						alignItems: 'center',
+						justifyContent: 'center',
+						width: Dimensions.get('window').width,
+						borderWidth: 1,
+						borderColor: '#766ec5',
+						borderBottomLeftRadius: 15,
+						borderBottomRightRadius: 15,
+					}}>
+						<Title style={{
+							color: '#766ec5'
+						}}>AVALIAÇÃO 3</Title>
+					</View>
+					<View style={{flex: 0.8}}>
+						<VictoryChart 
+							width={Dimensions.get('window').width - 5}
+						>
+							<VictoryBar 
+								data={av3} 
+								x="nota" y="qntd" 
+								style={{ data: {fill: '#766ec5'} }} 
+								alignment="start"
+								barRatio={1.05}
+								categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+								labels={({ datum }) => datum.qntd}
+								labelComponent={<VictoryLabel dx={10} />}
+							/>
+						</VictoryChart>
+					</View>
 				</View>
 			);
 		}
@@ -658,21 +725,36 @@ function telaEstatIndividuais({ navigation }) {
 			return(
 				
 				<View style={styles.container}>
-					<Title>Avaliação 4</Title>
-					<VictoryChart 
-						width={Dimensions.get('window').width - 5}
-					>
-						<VictoryBar 
-							data={av4} 
-							x="nota" y="qntd" 
-							style={{ data: {fill: '#766ec5'} }} 
-							alignment="start"
-							barRatio={1.05}
-							categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
-							labels={({ datum }) => datum.qntd}
-							labelComponent={<VictoryLabel dx={10} />}
-						/>
-					</VictoryChart>
+					<View style={{
+						flex: 0.2,
+						alignItems: 'center',
+						justifyContent: 'center',
+						width: Dimensions.get('window').width,
+						borderWidth: 1,
+						borderColor: '#766ec5',
+						borderBottomLeftRadius: 15,
+						borderBottomRightRadius: 15,
+					}}>
+						<Title style={{
+							color: '#766ec5'
+						}}>AVALIAÇÃO 4</Title>
+					</View>
+					<View style={{flex: 0.8}}>
+						<VictoryChart 
+							width={Dimensions.get('window').width - 5}
+						>
+							<VictoryBar 
+								data={av4} 
+								x="nota" y="qntd" 
+								style={{ data: {fill: '#766ec5'} }} 
+								alignment="start"
+								barRatio={1.05}
+								categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
+								labels={({ datum }) => datum.qntd}
+								labelComponent={<VictoryLabel dx={10} />}
+							/>
+						</VictoryChart>
+					</View>
 				</View>
 			);
 		}
@@ -1733,11 +1815,6 @@ const styles = StyleSheet.create({
 		height: 30,
 		width: 30,
 		resizeMode: 'contain',
-	},
-
-	txtAviso: {
-		fontSize: 16,
-		color: '#1f1f1f'
 	},
 
 	txtbotaohome: {
