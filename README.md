@@ -1,6 +1,11 @@
 # Classembly
 
-Aplicativo com o intuito de auxiliar o professor na preparação e durante o momento do conselho de classe.
+Aplicativo móvel com o intuito de auxiliar o professor na preparação e durante o momento do conselho de classe.  
+
+Trabalho desenvolvido para a disciplina de Projeto Integrador no Curso Técnico em Informática Integrado ao Ensino Médio do IFSC Câmpus Xanxerê, no período 2020-2021.  
+
+Integrantes do grupo: [Gustavo Girotto](https://github.com/gugirotto), [Joana Luiza Matté Pagliari](https://github.com/Jeane-DArc), [João Gabriel Piva](https://github.com/ornnacio) e [Yara Costa Golembieski](https://github.com/YaraGolembieski).  
+Orientadores: Prof. Alex Ricardo Weber e Profª Drª Jóice Konrad.
 
 ## Resumo
 
