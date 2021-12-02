@@ -35,15 +35,18 @@ export default function telaCadastro({ navigation }){
 	
 	return(
 		<View style={styles.container}>
-			<Image style={styles.logo2} source={logo} />
-			<TextInput style={styles.txtinput} placeholder='Email Institucional' placeholderTextColor='#d9d9d9' onChangeText={setEmail} value={email}/>
-			<TextInput style={styles.txtinput} placeholder='Nome completo' placeholderTextColor='#d9d9d9' onChangeText={setNome} value={nome}/>
-			<TextInput style={styles.txtinput} placeholder='Senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setSenha} value={senha}/>
-			<TextInput style={styles.txtinput} placeholder='Confirmar senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setConfSenha} value={confSenha}/>
-			<TouchableOpacity style={nome === '' || email === '' || senha === '' || confSenha === '' ? styles.butaoInativo : styles.butao} onPress={press}>
-				<Text style={nome === '' || email === '' || senha === '' || confSenha === '' ? styles.txtbotaoInativo : styles.txtbotao}>Cadastrar</Text>
-			</TouchableOpacity>
-			<StatusBar style="auto" />
+			<View style={{flex: 0.25, justifyContent: 'center', alignItems: 'center'}}>
+				<Image style={styles.logo2} source={logo} />
+			</View>
+			<View style={{flex: 0.75, justifyContent: 'center', alignItems: 'center'}}>
+				<TextInput style={styles.txtinput} placeholder='Email Institucional' placeholderTextColor='#d9d9d9' onChangeText={setEmail} value={email}/>
+				<TextInput style={styles.txtinput} placeholder='Nome completo' placeholderTextColor='#d9d9d9' onChangeText={setNome} value={nome}/>
+				<TextInput style={styles.txtinput} placeholder='Senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setSenha} value={senha}/>
+				<TextInput style={styles.txtinput} placeholder='Confirmar senha' placeholderTextColor='#d9d9d9' secureTextEntry = {true} onChangeText={setConfSenha} value={confSenha}/>
+				<TouchableOpacity style={nome === '' || email === '' || senha === '' || confSenha === '' ? styles.butaoInativo : styles.butao} onPress={press}>
+					<Text style={nome === '' || email === '' || senha === '' || confSenha === '' ? styles.txtbotaoInativo : styles.txtbotao}>Cadastrar</Text>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 }
@@ -59,9 +62,9 @@ export const styles = StyleSheet.create({
 	},
   
 	logo2: {
-		height: 88.8,
-		width: 328.8,
-		marginBottom: 50,
+		width: 0.9 * Dimensions.get('window').width,
+		height: undefined,
+		aspectRatio: 3.702,
 	},
   
 	txt: {
