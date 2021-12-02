@@ -30,17 +30,17 @@ const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
 function MenuPerfil( props ){
-	
+
 	const navigation = useNavigation();
-	
+
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const [nome, setNome] = useState('');
 	const [prontoNome, setProntoNome] = useState(false);
 
 	useEffect(() => {
-		
+
 		async function getUserInfo(){
-			
+
 			if(!prontoNome){
 				let doc = await firebase
 				.firestore()
@@ -55,10 +55,10 @@ function MenuPerfil( props ){
 				}
 			}
 		}
-		
+
 		getUserInfo();
 	});
-	
+
 	const press = () => {
 		Alert.alert(
 			"Deseja realmente sair?",
@@ -70,17 +70,17 @@ function MenuPerfil( props ){
 						console.log('cancelado')
 					},
 			 	},
-			 	{ 
-					text: "Sim", 
+			 	{
+					text: "Sim",
 					onPress: () => {
 						logout().then(() => navigation.replace('Loading'));
-					} 
+					}
 				}
 			]
 		);
-		
+
 	};
-	
+
 	return(
 		<View style={styles.containerMenu}>
 			<View style={{
@@ -125,9 +125,9 @@ function MenuPerfil( props ){
 }
 
 function telaSelectTurma(){
-	
+
 	const navigation = useNavigation();
-	
+
 	let currentUserUID = firebase.auth().currentUser.uid;
 	const [email, setEmail] = useState('');
 	const [turmas, setTurmas] = useState([]);
@@ -135,11 +135,11 @@ function telaSelectTurma(){
 	const [prontoTurmas, setProntoTurmas] = useState(false);
 
 	useEffect(() => {
-		
+
 		async function getUserInfo(){
-			
+
 			if(!prontoEmail){
-			
+
 				let doc = await firebase
 				.firestore()
 				.collection('users')
@@ -151,20 +151,20 @@ function telaSelectTurma(){
 				});
 			}
 		}
-		
+
 		getUserInfo();
-		
+
 		async function getTurmas(){
-			
+
 			if(!prontoTurmas){
 
 				let doc = await firebase
 				.firestore()
 				.collection('turmas')
 				.onSnapshot((query) => {
-					
+
 					const list = [];
-					
+
 					query.forEach((doc) => {
 						if(doc.data().professor === email){
 							list.push({
@@ -173,28 +173,28 @@ function telaSelectTurma(){
 							});
 						}
 					})
-					
+
 					setTurmas(list);
 					setProntoTurmas(true);
 				})
 			}
 		}
-		
+
 		getTurmas();
 	});
-	
+
 	function press(id){
-		
+
 		navigation.navigate("HomeDrawer", {
-			screen: 'HomeTabs', 
+			screen: 'HomeTabs',
 			params: { id: id, update: true }
 		});
 	}
-	
+
 	function sair(){
 		logout().then(() => navigation.navigate('Loading'));
 	};
-	
+
 	return(
 		<View style={styles.container}>
 			<View style={{
@@ -221,7 +221,7 @@ function telaSelectTurma(){
 			}}>
 				<ScrollView contentContainerStyle={styles.containerScroll}>
 					<View style={styles.containerTurmas}>
-						{!prontoTurmas && 
+						{!prontoTurmas &&
 							<ActivityIndicator size='large' color="#766ec5" style={{marginVertical: 40}}/>
 						}
 						{prontoTurmas && turmas.map((t, index) => {
@@ -231,7 +231,7 @@ function telaSelectTurma(){
 								</TouchableOpacity>
 							</>);
 						})}
-						{(prontoTurmas && (turmas.length == 0)) && 
+						{(prontoTurmas && (turmas.length == 0)) &&
 							<Text style={styles.txtbotao}>Nenhuma turma encontrada</Text>
 						}
 					</View>
@@ -262,9 +262,9 @@ function telaAddTurma({ navigation }){
 	useEffect(() => {
 
 		async function getUserInfo(){
-			
+
 			if(!prontoEmail){
-			
+
 				let doc = await firebase
 				.firestore()
 				.collection('users')
@@ -278,7 +278,7 @@ function telaAddTurma({ navigation }){
 				}
 			}
 		}
-		
+
 		getUserInfo();
 	})
 
@@ -296,10 +296,10 @@ function telaAddTurma({ navigation }){
 					backgroundColor: '#766ec5',
 				}}>
 					<Paragraph style={{
-						textAlign: 'center', 
+						textAlign: 'center',
 						color: '#f4f9fc',
 						fontSize: 14,
-					}}>Para adicionar uma turma, baixe a planilha de notas da turma desejada no SIGAA, clique no botão "Abrir conversor", selecione a planilha de notas e baixe o arquivo em formato CSV. Após isso, clique no botão "Selecionar CSV" e selecione o arquivo CSV do seu dispositivo.</Paragraph> 
+					}}>Para adicionar uma turma, baixe a planilha de notas da turma desejada no SIGAA, clique no botão "Abrir conversor", selecione a planilha de notas e baixe o arquivo em formato CSV. Após isso, clique no botão "Selecionar CSV" e selecione o arquivo CSV do seu dispositivo.</Paragraph>
 				</View>
 				<Image source={seta} style={{width: 50, height: 50, marginTop: 5}} />
 			</View>
@@ -312,9 +312,9 @@ function telaAddTurma({ navigation }){
 		const [visibleDialog2, setVisibleDialog2] = React.useState(false);
 
 		async function openLink() {
-			WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});	
+			WebBrowser.openBrowserAsync('https://convertio.co/pt/xlsx-csv/', {showInRecents: true});
 		}
-	
+
 		async function pickCSV() {
 
 			let doc = DocumentPicker.getDocumentAsync({
@@ -324,18 +324,18 @@ function telaAddTurma({ navigation }){
 				if(p.type === "cancel"){
 					return;
 				}
-					
+
 				setVisibleDialog1(true);
-	
+
 				const stringCSV = await FileSystem.readAsStringAsync(p.uri);
 				let arr = stringCSV.split('\n');
 				arr.pop();
 				let idTurma = null, nomeTurma = null, count = 0;
-	
+
 				arr.forEach((linha, index) => {
-	
+
 					let arr2 = linha.replace('/', '').split('","');
-	
+
 					if(index == 0 || index == 1 || index == 3 || index == 4 || index == 5 || index == 6 || index == 7 || index == 8 || index == 9 || index == arr.length - 1){
 						//aqui é pra ignorar as linhas vazias
 					}else if(index == 2){
@@ -349,7 +349,7 @@ function telaAddTurma({ navigation }){
 								nome: nomeTurma,
 								professor: email
 							});
-	
+
 					}else{
 						let obj = {
 							matricula: arr2[1],
@@ -375,7 +375,12 @@ function telaAddTurma({ navigation }){
 								id_aluno: obj.matricula,
 								motivo_prio: null,
 								nome: obj.nome,
-								prio: false
+								prio: false,
+								motivo_predef: {
+									"Faltas": false,
+									"Mau comportamento": false,
+									"Notas baixas": false
+								},
 							})
 					}
 				});
@@ -389,7 +394,7 @@ function telaAddTurma({ navigation }){
 			setVisibleDialog2(false);
 			navigation.goBack();
 		}
-		
+
 		return(
 			<View style={styles.container}>
 				<TouchableOpacity onPress={() => openLink()} style={styles.butaoHomePuro}>
@@ -423,7 +428,7 @@ function telaAddTurma({ navigation }){
 	);
 }
 
-function homeTabs({route, navigation}){	
+function homeTabs({route, navigation}){
 
 	return(
 		<IDContext.Provider value={route.params.id}>
@@ -452,7 +457,7 @@ function homeTabs({route, navigation}){
 }
 
 function homeDrawer(){
-	
+
 	return(
 		<Drawer.Navigator drawerContent={(props) => <MenuPerfil {...props} />}>
 			<Drawer.Screen name="HomeTabs" component={homeTabs} />
@@ -461,7 +466,7 @@ function homeDrawer(){
 }
 
 export default function homeStack(){
-	
+
 	return(
 		<Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#766ec5' }, headerTintColor: '#f4f9fc' }}>
 			<Stack.Screen name="SelectTurma" component={telaSelectTurma} options={{headerShown: false}}/>
@@ -473,7 +478,7 @@ export default function homeStack(){
 
 
 const styles = StyleSheet.create({
-	
+
 	container: {
 		flex: 1,
 		flexDirection: 'column',
@@ -481,7 +486,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
-	
+
 	containerMenu: {
 		flex: 1,
 		flexDirection: 'column',
@@ -502,25 +507,25 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		width: Dimensions.get('window').width,
 	},
-	
+
 	iconTab: {
 		height: 30,
 		width: 30,
 		resizeMode: 'contain',
 	},
-  
+
 	logo1: {
 		width: "95%",
 		height: undefined,
 		aspectRatio: 1233/333,
 	},
-  
+
 	txtbotaohome: {
 		fontSize: 20,
 		color: '#d9d9d9',
 		textAlign: 'center',
 	},
-  
+
 	butaoHome: {
 		backgroundColor: '#766ec5',
 		padding: 5,
@@ -528,7 +533,7 @@ const styles = StyleSheet.create({
 		marginVertical: 15,
 		width: "80%",
 	},
-	
+
 	butaoSair: {
 		backgroundColor: '#766ec5',
 		padding: 5,
@@ -543,7 +548,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-between',
 		flexDirection: 'row',
 	},
-	
+
 	butaoHomePuro: {
 		backgroundColor: '#f4f9fc',
 		borderColor: '#766ec5',
@@ -558,7 +563,7 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		color: '#1f1f1f',
 	},
-	
+
 	txtbotaohomePuro: {
 		fontSize: 20,
 		color: '#766ec5',
@@ -580,5 +585,5 @@ const styles = StyleSheet.create({
 		bottom: 0,
 		backgroundColor: '#766ec5',
 	},
- 
+
 });

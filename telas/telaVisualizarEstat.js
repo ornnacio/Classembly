@@ -2,7 +2,7 @@ import React, { useState, state, Component, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useIsFocused } from '@react-navigation/native';
-import { FAB, Card, Title, Paragraph, IconButton, TextInput, Portal, Dialog } from 'react-native-paper';
+import { FAB, Card, Title, Paragraph, IconButton, TextInput, Portal, Dialog, Checkbox, Chip } from 'react-native-paper';
 import firebase from 'firebase';
 import 'firebase/firestore';
 import { IDContext } from "./context.js";
@@ -45,7 +45,7 @@ function telaEstudantesPrio({ route, navigation }) {
 	const [prontoAlunos, setProntoAlunos] = React.useState(false);
 	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
 	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
-	
+
 	let vazio = true;
 	const isFocused = useIsFocused();
 	const idTurma = React.useContext(IDContext);
@@ -98,11 +98,11 @@ function telaEstudantesPrio({ route, navigation }) {
 			  	{
 					text: "Não",
 					onPress: () => {
-						
+
 					},
 			 	},
-			 	{ 
-					text: "Sim", 
+			 	{
+					text: "Sim",
 					onPress: () => {
 
 						setVisibleDialog1(true);
@@ -125,7 +125,7 @@ function telaEstudantesPrio({ route, navigation }) {
 						setVisibleDialog1(false);
 						setVisibleDialog2(true);
 
-					} 
+					}
 				}
 			]
 		);
@@ -156,9 +156,18 @@ function telaEstudantesPrio({ route, navigation }) {
 												<Title>{a.nome}</Title>
 											</View>
 											<View style={{ flex: 0.3, flexDirection: "row" }}>
-												<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio, nome: a.nome })}></IconButton>
+												<IconButton icon="pencil" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: alunosId[index], txtOriginal: a.motivo_prio, nome: a.nome, predef: a.motivo_predef })}></IconButton>
 												<IconButton icon="delete" color="#534d8a" size={25} onPress={() => deletar(alunosId[index])}></IconButton>
 											</View>
+										</View>
+										<View style={{
+											flexDirection: 'row',
+											justifyContent: 'center',
+											alignItems: 'center'
+										}}>
+											{a.motivo_predef['Faltas'] && <Chip style={{margin: 5}}>Faltas</Chip>}
+											{a.motivo_predef['Mau comportamento'] && <Chip style={{margin: 5}}>Mau comportamento</Chip>}
+											{a.motivo_predef['Notas baixas'] && <Chip style={{margin: 5}}>Notas baixas</Chip>}
 										</View>
 										<Paragraph>{a.motivo_prio}</Paragraph>
 									</Card.Content>
@@ -223,7 +232,7 @@ function adicionarEstudantePrio({ route, navigation }) {
 											<Title>{a.nome}</Title>
 										</View>
 										<View style={{ flex: 0.15 }}>
-											<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: ids[index], txtOriginal: '', nome: a.nome })}></IconButton>
+											<IconButton icon="plus" color="#534d8a" size={25} onPress={() => navigation.navigate("EscreverMotivo", { id: ids[index], txtOriginal: '', nome: a.nome, predef: {"Faltas": false, "Mau comportamento": false,	"Notas baixas": false}})}></IconButton>
 										</View>
 									</View>
 								</Card.Content>
@@ -252,14 +261,28 @@ function adicionarEstudantePrio({ route, navigation }) {
 
 function escreverMotivo({ route, navigation }) {
 
+	let predef = route.params.predef;
 	const [txt, setTxt] = React.useState(route.params.txtOriginal);
 	const [visibleDialog1, setVisibleDialog1] = React.useState(false);
 	const [visibleDialog2, setVisibleDialog2] = React.useState(false);
+	const [checked, setChecked] = React.useState([predef['Faltas'], predef['Mau comportamento'], predef['Notas baixas']]);
 	const idTurma = React.useContext(IDContext);
 
 	function press() {
 
 		setVisibleDialog1(true);
+
+		let map = new Map();
+
+		map.set('Faltas', checked[0]);
+		map.set('Mau comportamento', checked[1]);
+		map.set('Notas baixas', checked[2]);
+
+		let obj = {
+			'Faltas': checked[0],
+			'Mau comportamento': checked[1],
+			'Notas baixas': checked[2],
+		}
 
 		try {
 			firebase
@@ -270,7 +293,8 @@ function escreverMotivo({ route, navigation }) {
 				.doc(route.params.id)
 				.update({
 					prio: true,
-					motivo_prio: txt
+					motivo_prio: txt,
+					motivo_predef: obj,
 				});
 		} catch (e) {
 			alert(e.message);
@@ -301,6 +325,45 @@ function escreverMotivo({ route, navigation }) {
 				<Text style={{fontSize: 22, textAlign: 'center', color: '#766ec5'}}>Escrever motivo da prioridade de {route.params.nome}</Text>
 			</View>
 			<View style={{flex: 0.7}}>
+				<View style={{
+					flexDirection: 'row',
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: 0.8 * Dimensions.get('window').width,
+					flexWrap: 'wrap',
+					marginTop: 25,
+				}}>
+					<View style={styles.containerCheckbox}>
+						<Text>Faltas</Text>
+						<Checkbox
+							status={checked[0] ? 'checked' : 'unchecked'}
+							color="#766ec5"
+							onPress={() => {
+								setChecked([!checked[0], checked[1], checked[2]]);
+							}}
+						/>
+					</View>
+					<View style={styles.containerCheckbox}>
+						<Text>Mau comportamento</Text>
+						<Checkbox
+							status={checked[1] ? 'checked' : 'unchecked'}
+							color="#766ec5"
+							onPress={() => {
+								setChecked([checked[0], !checked[1], checked[2]]);
+							}}
+						/>
+					</View>
+					<View style={styles.containerCheckbox}>
+						<Text>Notas baixas</Text>
+						<Checkbox
+							status={checked[2] ? 'checked' : 'unchecked'}
+							color="#766ec5"
+							onPress={() => {
+								setChecked([checked[0], checked[1], !checked[2]]);
+							}}
+						/>
+					</View>
+				</View>
 				<TextInput
 					style={styles.inputBox}
 					underlineColor='#766ec5'
@@ -361,7 +424,7 @@ function telaEstatIndividuais({ navigation }) {
 					.collection('alunos')
 					.onSnapshot((query) => {
 
-						const list = [], contadores1 = [0, 0, 0], contadores2 = [0, 0], 
+						const list = [], contadores1 = [0, 0, 0], contadores2 = [0, 0],
 							tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 							tempAv2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 							tempAv3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -483,7 +546,7 @@ function telaEstatIndividuais({ navigation }) {
 				}}>
 					<View style={{
 						flex: 0.7,
-						justifyContent: 'center',  
+						justifyContent: 'center',
 						alignItems: 'center',
 					}}>
 						<PieChart
@@ -494,9 +557,9 @@ function telaEstatIndividuais({ navigation }) {
 					</View>
 					<View style={{
 						flex: 0.3,
-						justifyContent: 'center', 
-						textAlign: 'center', 
-						alignItems: 'center', 
+						justifyContent: 'center',
+						textAlign: 'center',
+						alignItems: 'center',
 						borderColor: '#766ec5',
 						borderWidth: 1,
 						borderRadius: 5,
@@ -558,7 +621,7 @@ function telaEstatIndividuais({ navigation }) {
 				}}>
 					<View style={{
 						flex: 0.7,
-						justifyContent: 'center',  
+						justifyContent: 'center',
 						alignItems: 'center',
 					}}>
 						<PieChart
@@ -569,9 +632,9 @@ function telaEstatIndividuais({ navigation }) {
 					</View>
 					<View style={{
 						flex: 0.3,
-						justifyContent: 'center', 
-						textAlign: 'center', 
-						alignItems: 'center', 
+						justifyContent: 'center',
+						textAlign: 'center',
+						alignItems: 'center',
 						borderColor: '#766ec5',
 						borderWidth: 1,
 						borderRadius: 5,
@@ -623,13 +686,13 @@ function telaEstatIndividuais({ navigation }) {
 						}}>AVALIAÇÃO 1</Title>
 					</View>
 					<View style={{flex: 0.8}}>
-						<VictoryChart 
+						<VictoryChart
 							width={Dimensions.get('window').width - 5}
 						>
-							<VictoryBar 
-								data={av1} 
-								x="nota" y="qntd" 
-								style={{ data: {fill: '#766ec5'} }} 
+							<VictoryBar
+								data={av1}
+								x="nota" y="qntd"
+								style={{ data: {fill: '#766ec5'} }}
 								alignment="start"
 								barRatio={1.05}
 								categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
@@ -645,7 +708,7 @@ function telaEstatIndividuais({ navigation }) {
 		function TelaAv2() {
 
 			return(
-				
+
 				<View style={styles.container}>
 					<View style={{
 						flex: 0.2,
@@ -662,13 +725,13 @@ function telaEstatIndividuais({ navigation }) {
 						}}>AVALIAÇÃO 2</Title>
 					</View>
 					<View style={{flex: 0.8}}>
-						<VictoryChart 
+						<VictoryChart
 							width={Dimensions.get('window').width - 5}
 						>
-							<VictoryBar 
-								data={av2} 
-								x="nota" y="qntd" 
-								style={{ data: {fill: '#766ec5'} }} 
+							<VictoryBar
+								data={av2}
+								x="nota" y="qntd"
+								style={{ data: {fill: '#766ec5'} }}
 								alignment="start"
 								barRatio={1.05}
 								categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
@@ -684,7 +747,7 @@ function telaEstatIndividuais({ navigation }) {
 		function TelaAv3() {
 
 			return(
-				
+
 				<View style={styles.container}>
 					<View style={{
 						flex: 0.2,
@@ -701,13 +764,13 @@ function telaEstatIndividuais({ navigation }) {
 						}}>AVALIAÇÃO 3</Title>
 					</View>
 					<View style={{flex: 0.8}}>
-						<VictoryChart 
+						<VictoryChart
 							width={Dimensions.get('window').width - 5}
 						>
-							<VictoryBar 
-								data={av3} 
-								x="nota" y="qntd" 
-								style={{ data: {fill: '#766ec5'} }} 
+							<VictoryBar
+								data={av3}
+								x="nota" y="qntd"
+								style={{ data: {fill: '#766ec5'} }}
 								alignment="start"
 								barRatio={1.05}
 								categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
@@ -723,7 +786,7 @@ function telaEstatIndividuais({ navigation }) {
 		function TelaAv4() {
 
 			return(
-				
+
 				<View style={styles.container}>
 					<View style={{
 						flex: 0.2,
@@ -740,13 +803,13 @@ function telaEstatIndividuais({ navigation }) {
 						}}>AVALIAÇÃO 4</Title>
 					</View>
 					<View style={{flex: 0.8}}>
-						<VictoryChart 
+						<VictoryChart
 							width={Dimensions.get('window').width - 5}
 						>
-							<VictoryBar 
-								data={av4} 
-								x="nota" y="qntd" 
-								style={{ data: {fill: '#766ec5'} }} 
+							<VictoryBar
+								data={av4}
+								x="nota" y="qntd"
+								style={{ data: {fill: '#766ec5'} }}
 								alignment="start"
 								barRatio={1.05}
 								categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
@@ -769,7 +832,7 @@ function telaEstatIndividuais({ navigation }) {
 		);
 	}
 
-	return( 
+	return(
 		<>
 		{prontoAlunos && <Pages indicatorColor={'#766ec5'}>
 			<GraficoAprendizado />
@@ -796,67 +859,67 @@ function telaEstatComparadas({ navigation }) {
 		const [turmas, setTurmas] = useState([]);
 		const sliceColor1 = ['#918bd1','#ada8dc','#c8c5e8'];
 		const sliceColor2 = ['#918bd1','#ada8dc'];
-	
+
 		let currentUserUID = firebase.auth().currentUser.uid;
-	
+
 		useEffect(() => {
-	
+
 			async function getEmail(){
-	
+
 				if(!prontoEmail){
 					let doc = await firebase
 					.firestore()
 					.collection('users')
 					.doc(currentUserUID)
 					.get();
-	
+
 					if (doc.exists){
 						setEmail(doc.data().email);
 						setProntoEmail(true);
 					}
 				}
 			}
-	
+
 			async function getIds(){
-	
+
 				if(!prontoIds){
 					firebase.firestore()
 						.collection('turmas')
 						.get()
 						.then((query) => {
 							let listIds = [], listNomes = [];
-							
+
 							query.forEach((doc) => {
 								if (doc.data().professor === email) {
 									listIds.push(doc.id);
 									listNomes.push(doc.data().nome);
 								}
 							});
-	
+
 							setIds(listIds);
 							setNomes(listNomes);
 							setProntoIds(true);
 						})
 				}
 			}
-	
+
 			async function getTurmas(){
-	
+
 				if(!prontoTurmas){
-	
+
 					let listAprend = [];
-	
+
 					ids.forEach(async(i, index) => {
-	
+
 						let doc = await firebase.firestore()
 							.collection('turmas')
 							.doc(i)
 							.collection('alunos')
 							.get()
 							.then((query) => {
-	
+
 								let counts = [0, 0, 0];
-	
+
 								query.forEach((a) => {
 									switch(a.data().aprendizado){
 										case "Auditivo":
@@ -870,10 +933,10 @@ function telaEstatComparadas({ navigation }) {
 											break;
 									}
 								})
-	
+
 								listAprend.push(counts);
 							});
-	
+
 						if(!(listAprend.length < turmas.length)){
 							setTurmas(listAprend);
 							setProntoTurmas(true);
@@ -881,10 +944,10 @@ function telaEstatComparadas({ navigation }) {
 					})
 				}
 			}
-	
+
 			getEmail().then(getIds()).then(getTurmas());
 		})
-	
+
 		return (
 			<View style={styles.container}>
 				<View style={{
@@ -907,7 +970,7 @@ function telaEstatComparadas({ navigation }) {
 							<ActivityIndicator size='large' color="#766ec5" />
 						}
 						{prontoTurmas && turmas.map((t, index) => {
-							
+
 							return(<>
 								<Title style={{marginVertical: 10, color: '#766ec5'}}>{nomes[index]}</Title>
 								<PieChart
@@ -917,9 +980,9 @@ function telaEstatComparadas({ navigation }) {
 									style={{marginBottom: 30}}
 								/>
 								<View style={{
-									justifyContent: 'center', 
-									textAlign: 'center', 
-									alignItems: 'center', 
+									justifyContent: 'center',
+									textAlign: 'center',
+									alignItems: 'center',
 									borderColor: '#766ec5',
 									borderWidth: 1,
 									borderRadius: 5,
@@ -973,67 +1036,67 @@ function telaEstatComparadas({ navigation }) {
 		const [turmas, setTurmas] = useState([]);
 		const sliceColor1 = ['#918bd1','#ada8dc','#c8c5e8'];
 		const sliceColor2 = ['#918bd1','#ada8dc'];
-	
+
 		let currentUserUID = firebase.auth().currentUser.uid;
-	
+
 		useEffect(() => {
-	
+
 			async function getEmail(){
-	
+
 				if(!prontoEmail){
 					let doc = await firebase
 					.firestore()
 					.collection('users')
 					.doc(currentUserUID)
 					.get();
-	
+
 					if (doc.exists){
 						setEmail(doc.data().email);
 						setProntoEmail(true);
 					}
 				}
 			}
-	
+
 			async function getIds(){
-	
+
 				if(!prontoIds){
 					firebase.firestore()
 						.collection('turmas')
 						.get()
 						.then((query) => {
 							let listIds = [], listNomes = [];
-							
+
 							query.forEach((doc) => {
 								if (doc.data().professor === email) {
 									listIds.push(doc.id);
 									listNomes.push(doc.data().nome);
 								}
 							});
-	
+
 							setIds(listIds);
 							setNomes(listNomes);
 							setProntoIds(true);
 						})
 				}
 			}
-	
+
 			async function getTurmas(){
-	
+
 				if(!prontoTurmas){
-	
+
 					let listComp = [];
-	
+
 					ids.forEach(async(i, index) => {
-	
+
 						let doc = await firebase.firestore()
 							.collection('turmas')
 							.doc(i)
 							.collection('alunos')
 							.get()
 							.then((query) => {
-	
+
 								let counts = [0, 0];
-	
+
 								query.forEach((a) => {
 									switch(a.data().comp){
 										case "Participativo":
@@ -1044,10 +1107,10 @@ function telaEstatComparadas({ navigation }) {
 											break;
 									}
 								})
-	
+
 								listComp.push(counts);
 							});
-	
+
 						if(!(listComp.length < turmas.length)){
 							setTurmas(listComp);
 							setProntoTurmas(true);
@@ -1055,10 +1118,10 @@ function telaEstatComparadas({ navigation }) {
 					})
 				}
 			}
-	
+
 			getEmail().then(getIds()).then(getTurmas());
 		})
-	
+
 		return (
 			<View style={styles.container}>
 				<View style={{
@@ -1081,7 +1144,7 @@ function telaEstatComparadas({ navigation }) {
 							<ActivityIndicator size='large' color="#766ec5" />
 						}
 						{prontoTurmas && turmas.map((t, index) => {
-							
+
 							return(<>
 								<Title style={{marginVertical: 10, color: '#766ec5'}}>{nomes[index]}</Title>
 								<PieChart
@@ -1091,9 +1154,9 @@ function telaEstatComparadas({ navigation }) {
 									style={{marginBottom: 30}}
 								/>
 								<View style={{
-									justifyContent: 'center', 
-									textAlign: 'center', 
-									alignItems: 'center', 
+									justifyContent: 'center',
+									textAlign: 'center',
+									alignItems: 'center',
 									borderColor: '#766ec5',
 									borderWidth: 1,
 									borderRadius: 5,
@@ -1136,67 +1199,67 @@ function telaEstatComparadas({ navigation }) {
 		const [ids, setIds] = useState([]);
 		const [nomes, setNomes] = useState([]);
 		const [turmas, setTurmas] = useState([]);
-	
+
 		let currentUserUID = firebase.auth().currentUser.uid;
-	
+
 		useEffect(() => {
-	
+
 			async function getEmail(){
-	
+
 				if(!prontoEmail){
 					let doc = await firebase
 					.firestore()
 					.collection('users')
 					.doc(currentUserUID)
 					.get();
-	
+
 					if (doc.exists){
 						setEmail(doc.data().email);
 						setProntoEmail(true);
 					}
 				}
 			}
-	
+
 			async function getIds(){
-	
+
 				if(!prontoIds){
 					firebase.firestore()
 						.collection('turmas')
 						.get()
 						.then((query) => {
 							let listIds = [], listNomes = [];
-							
+
 							query.forEach((doc) => {
 								if (doc.data().professor === email) {
 									listIds.push(doc.id);
 									listNomes.push(doc.data().nome);
 								}
 							});
-	
+
 							setIds(listIds);
 							setNomes(listNomes);
 							setProntoIds(true);
 						})
 				}
 			}
-	
+
 			async function getTurmas(){
-	
+
 				if(!prontoTurmas){
 
 					let listNotas = [];
-	
+
 					ids.forEach(async(i, index) => {
-	
+
 						let doc = await firebase.firestore()
 							.collection('turmas')
 							.doc(i)
 							.collection('alunos')
 							.get()
 							.then((query) => {
-	
+
 								let tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-	
+
 								query.forEach((doc) => {
 									tempAv1[parseInt(doc.data().n1)] += 1;
 								})
@@ -1214,10 +1277,10 @@ function telaEstatComparadas({ navigation }) {
 									{ nota: 10, qntd: tempAv1[9] },
 									{ nota: 11, qntd: tempAv1[10] },
 								];
-								
+
 								listNotas.push(data1);
 							});
-	
+
 						if(!(listNotas.length < turmas.length)){
 							setTurmas(listNotas);
 							setProntoTurmas(true);
@@ -1225,7 +1288,7 @@ function telaEstatComparadas({ navigation }) {
 					})
 				}
 			}
-	
+
 			getEmail().then(getIds()).then(getTurmas());
 		})
 
@@ -1251,16 +1314,16 @@ function telaEstatComparadas({ navigation }) {
 							<ActivityIndicator size='large' color="#766ec5" />
 						}
 						{prontoTurmas && turmas.map((t, index) => {
-							
+
 							return(<>
 								<Title style={{color: '#766ec5', marginVertical: 15}}>{nomes[index]}</Title>
-								<VictoryChart 
+								<VictoryChart
 									width={Dimensions.get('window').width - 5}
 								>
-									<VictoryBar 
-										data={t} 
-										x="nota" y="qntd" 
-										style={{ data: {fill: '#766ec5'} }} 
+									<VictoryBar
+										data={t}
+										x="nota" y="qntd"
+										style={{ data: {fill: '#766ec5'} }}
 										alignment="start"
 										barRatio={1.05}
 										categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
@@ -1285,67 +1348,67 @@ function telaEstatComparadas({ navigation }) {
 		const [ids, setIds] = useState([]);
 		const [nomes, setNomes] = useState([]);
 		const [turmas, setTurmas] = useState([]);
-	
+
 		let currentUserUID = firebase.auth().currentUser.uid;
-	
+
 		useEffect(() => {
-	
+
 			async function getEmail(){
-	
+
 				if(!prontoEmail){
 					let doc = await firebase
 					.firestore()
 					.collection('users')
 					.doc(currentUserUID)
 					.get();
-	
+
 					if (doc.exists){
 						setEmail(doc.data().email);
 						setProntoEmail(true);
 					}
 				}
 			}
-	
+
 			async function getIds(){
-	
+
 				if(!prontoIds){
 					firebase.firestore()
 						.collection('turmas')
 						.get()
 						.then((query) => {
 							let listIds = [], listNomes = [];
-							
+
 							query.forEach((doc) => {
 								if (doc.data().professor === email) {
 									listIds.push(doc.id);
 									listNomes.push(doc.data().nome);
 								}
 							});
-	
+
 							setIds(listIds);
 							setNomes(listNomes);
 							setProntoIds(true);
 						})
 				}
 			}
-	
+
 			async function getTurmas(){
-	
+
 				if(!prontoTurmas){
 
 					let listNotas = [];
-	
+
 					ids.forEach(async(i, index) => {
-	
+
 						let doc = await firebase.firestore()
 							.collection('turmas')
 							.doc(i)
 							.collection('alunos')
 							.get()
 							.then((query) => {
-	
+
 								let tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-	
+
 								query.forEach((doc) => {
 									tempAv1[parseInt(doc.data().n2)] += 1;
 								})
@@ -1363,10 +1426,10 @@ function telaEstatComparadas({ navigation }) {
 									{ nota: 10, qntd: tempAv1[9] },
 									{ nota: 11, qntd: tempAv1[10] },
 								];
-								
+
 								listNotas.push(data1);
 							});
-	
+
 						if(!(listNotas.length < turmas.length)){
 							setTurmas(listNotas);
 							setProntoTurmas(true);
@@ -1374,7 +1437,7 @@ function telaEstatComparadas({ navigation }) {
 					})
 				}
 			}
-	
+
 			getEmail().then(getIds()).then(getTurmas());
 		})
 
@@ -1400,16 +1463,16 @@ function telaEstatComparadas({ navigation }) {
 							<ActivityIndicator size='large' color="#766ec5" />
 						}
 						{prontoTurmas && turmas.map((t, index) => {
-							
+
 							return(<>
 								<Title style={{color: '#766ec5', marginVertical: 15}}>{nomes[index]}</Title>
-								<VictoryChart 
+								<VictoryChart
 									width={Dimensions.get('window').width - 5}
 								>
-									<VictoryBar 
-										data={t} 
-										x="nota" y="qntd" 
-										style={{ data: {fill: '#766ec5'} }} 
+									<VictoryBar
+										data={t}
+										x="nota" y="qntd"
+										style={{ data: {fill: '#766ec5'} }}
 										alignment="start"
 										barRatio={1.05}
 										categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
@@ -1434,67 +1497,67 @@ function telaEstatComparadas({ navigation }) {
 		const [ids, setIds] = useState([]);
 		const [nomes, setNomes] = useState([]);
 		const [turmas, setTurmas] = useState([]);
-	
+
 		let currentUserUID = firebase.auth().currentUser.uid;
-	
+
 		useEffect(() => {
-	
+
 			async function getEmail(){
-	
+
 				if(!prontoEmail){
 					let doc = await firebase
 					.firestore()
 					.collection('users')
 					.doc(currentUserUID)
 					.get();
-	
+
 					if (doc.exists){
 						setEmail(doc.data().email);
 						setProntoEmail(true);
 					}
 				}
 			}
-	
+
 			async function getIds(){
-	
+
 				if(!prontoIds){
 					firebase.firestore()
 						.collection('turmas')
 						.get()
 						.then((query) => {
 							let listIds = [], listNomes = [];
-							
+
 							query.forEach((doc) => {
 								if (doc.data().professor === email) {
 									listIds.push(doc.id);
 									listNomes.push(doc.data().nome);
 								}
 							});
-	
+
 							setIds(listIds);
 							setNomes(listNomes);
 							setProntoIds(true);
 						})
 				}
 			}
-	
+
 			async function getTurmas(){
-	
+
 				if(!prontoTurmas){
 
 					let listNotas = [];
-	
+
 					ids.forEach(async(i, index) => {
-	
+
 						let doc = await firebase.firestore()
 							.collection('turmas')
 							.doc(i)
 							.collection('alunos')
 							.get()
 							.then((query) => {
-	
+
 								let tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-	
+
 								query.forEach((doc) => {
 									tempAv1[parseInt(doc.data().n3)] += 1;
 								})
@@ -1512,10 +1575,10 @@ function telaEstatComparadas({ navigation }) {
 									{ nota: 10, qntd: tempAv1[9] },
 									{ nota: 11, qntd: tempAv1[10] },
 								];
-								
+
 								listNotas.push(data1);
 							});
-	
+
 						if(!(listNotas.length < turmas.length)){
 							setTurmas(listNotas);
 							setProntoTurmas(true);
@@ -1523,7 +1586,7 @@ function telaEstatComparadas({ navigation }) {
 					})
 				}
 			}
-	
+
 			getEmail().then(getIds()).then(getTurmas());
 		})
 
@@ -1549,16 +1612,16 @@ function telaEstatComparadas({ navigation }) {
 							<ActivityIndicator size='large' color="#766ec5" />
 						}
 						{prontoTurmas && turmas.map((t, index) => {
-							
+
 							return(<>
 								<Title style={{color: '#766ec5', marginVertical: 15}}>{nomes[index]}</Title>
-								<VictoryChart 
+								<VictoryChart
 									width={Dimensions.get('window').width - 5}
 								>
-									<VictoryBar 
-										data={t} 
-										x="nota" y="qntd" 
-										style={{ data: {fill: '#766ec5'} }} 
+									<VictoryBar
+										data={t}
+										x="nota" y="qntd"
+										style={{ data: {fill: '#766ec5'} }}
 										alignment="start"
 										barRatio={1.05}
 										categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
@@ -1583,67 +1646,67 @@ function telaEstatComparadas({ navigation }) {
 		const [ids, setIds] = useState([]);
 		const [nomes, setNomes] = useState([]);
 		const [turmas, setTurmas] = useState([]);
-	
+
 		let currentUserUID = firebase.auth().currentUser.uid;
-	
+
 		useEffect(() => {
-	
+
 			async function getEmail(){
-	
+
 				if(!prontoEmail){
 					let doc = await firebase
 					.firestore()
 					.collection('users')
 					.doc(currentUserUID)
 					.get();
-	
+
 					if (doc.exists){
 						setEmail(doc.data().email);
 						setProntoEmail(true);
 					}
 				}
 			}
-	
+
 			async function getIds(){
-	
+
 				if(!prontoIds){
 					firebase.firestore()
 						.collection('turmas')
 						.get()
 						.then((query) => {
 							let listIds = [], listNomes = [];
-							
+
 							query.forEach((doc) => {
 								if (doc.data().professor === email) {
 									listIds.push(doc.id);
 									listNomes.push(doc.data().nome);
 								}
 							});
-	
+
 							setIds(listIds);
 							setNomes(listNomes);
 							setProntoIds(true);
 						})
 				}
 			}
-	
+
 			async function getTurmas(){
-	
+
 				if(!prontoTurmas){
 
 					let listNotas = [];
-	
+
 					ids.forEach(async(i, index) => {
-	
+
 						let doc = await firebase.firestore()
 							.collection('turmas')
 							.doc(i)
 							.collection('alunos')
 							.get()
 							.then((query) => {
-	
+
 								let tempAv1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-	
+
 								query.forEach((doc) => {
 									tempAv1[parseInt(doc.data().n4)] += 1;
 								})
@@ -1661,10 +1724,10 @@ function telaEstatComparadas({ navigation }) {
 									{ nota: 10, qntd: tempAv1[9] },
 									{ nota: 11, qntd: tempAv1[10] },
 								];
-								
+
 								listNotas.push(data1);
 							});
-	
+
 						if(!(listNotas.length < turmas.length)){
 							setTurmas(listNotas);
 							setProntoTurmas(true);
@@ -1672,7 +1735,7 @@ function telaEstatComparadas({ navigation }) {
 					})
 				}
 			}
-	
+
 			getEmail().then(getIds()).then(getTurmas());
 		})
 
@@ -1698,16 +1761,16 @@ function telaEstatComparadas({ navigation }) {
 							<ActivityIndicator size='large' color="#766ec5" />
 						}
 						{prontoTurmas && turmas.map((t, index) => {
-							
+
 							return(<>
 								<Title style={{color: '#766ec5', marginVertical: 15}}>{nomes[index]}</Title>
-								<VictoryChart 
+								<VictoryChart
 									width={Dimensions.get('window').width - 5}
 								>
-									<VictoryBar 
-										data={t} 
-										x="nota" y="qntd" 
-										style={{ data: {fill: '#766ec5'} }} 
+									<VictoryBar
+										data={t}
+										x="nota" y="qntd"
+										style={{ data: {fill: '#766ec5'} }}
 										alignment="start"
 										barRatio={1.05}
 										categories={{ x: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}}
@@ -1872,5 +1935,10 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 		width: 0.7 * Dimensions.get('window').width,
 	},
+
+	containerCheckbox: {
+		flexDirection: 'row',
+		alignItems: 'center'
+	}
 
 });
