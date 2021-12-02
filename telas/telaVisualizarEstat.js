@@ -97,9 +97,7 @@ function telaEstudantesPrio({ route, navigation }) {
 			[
 			  	{
 					text: "Não",
-					onPress: () => {
-
-					},
+					onPress: () => {},
 			 	},
 			 	{
 					text: "Sim",
@@ -269,14 +267,21 @@ function escreverMotivo({ route, navigation }) {
 	const idTurma = React.useContext(IDContext);
 
 	function press() {
+		
+		if(txt == ''){
+			Alert.alert(
+				"Aviso",
+				"O motivo da prioridade não pode estar vazio!",
+				[
+					  {
+						text: "OK",
+						onPress: () => {},
+					 }
+				]
+			);
+		}
 
 		setVisibleDialog1(true);
-
-		let map = new Map();
-
-		map.set('Faltas', checked[0]);
-		map.set('Mau comportamento', checked[1]);
-		map.set('Notas baixas', checked[2]);
 
 		let obj = {
 			'Faltas': checked[0],
